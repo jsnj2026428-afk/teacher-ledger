@@ -1,0 +1,15 @@
+{
+  "name": "课时账本 · TeacherLedger",
+  "short_name": "课时账本",
+  "description": "给老师用的温柔课时记录工具",
+  "lang": "zh-CN",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8f3ed",
+  "theme_color": "#7567f8",
+  "icons": [
+    {"src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
