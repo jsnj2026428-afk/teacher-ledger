@@ -1,15 +1,25 @@
 {
   "name": "课时账本",
   "short_name": "课时账本",
-  "description": "学员考勤、课酬统计及结算",
+  "description": "课程记录、学员考勤与课酬统计",
   "lang": "zh-CN",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f6f7f9",
-  "theme_color": "#f6f7f9",
+  "background_color": "#f7f5f7",
+  "theme_color": "#f7f5f7",
   "icons": [
-    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

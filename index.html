@@ -3,50 +3,64 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#f6f7f9">
+<meta name="theme-color" content="#f7f5f7">
 <meta name="description" content="课时账本：学员考勤、课程记录、课酬计算及月度结算。">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="课时账本">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>课时账本</title>
+<title>课时账本 V4</title>
 <style>
-:root{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft YaHei",system-ui,sans-serif;color:#202637;background:#f6f7f9;--ink:#202637;--sub:#6f788b;--muted:#9099aa;--border:#e7eaf0;--surface:#fff;--bg:#f6f7f9;--accent:#365fba;--accent-soft:#ecf2ff;--green:#21835c;--green-soft:#e9f7ef;--amber:#976a26;--amber-soft:#fff4dd;--red:#b94b55;--radius:18px}
-*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{min-height:100dvh}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #a8c2ff;outline-offset:2px}button{touch-action:manipulation}
-.app{max-width:940px;margin:0 auto;padding:22px 18px 126px}.top{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:30px}.brand{display:flex;align-items:center;gap:11px}.logo{width:41px;height:41px;border-radius:13px;background:#263957;color:#fff;display:grid;place-items:center;font-size:20px;font-weight:750}.brand h1{margin:0;font-size:19px;letter-spacing:-.035em}.brand span{display:block;font-size:11px;color:var(--muted);margin-top:2px}.month-picker{display:flex;align-items:center;gap:9px;font-size:12px;color:var(--sub)}.month-picker input{border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--ink);padding:9px 10px;width:145px;min-height:40px}
-.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin-bottom:17px}.page-head h2{font-size:25px;line-height:1.25;letter-spacing:-.04em;margin:0}.page-head p{font-size:13px;color:var(--sub);margin:7px 0 0}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.btn{appearance:none;border:1px solid #dee3ea;background:#fff;color:#354051;border-radius:11px;min-height:40px;padding:9px 13px;font-size:13px;font-weight:650;display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;transition:background .14s,transform .12s}.btn:active{transform:scale(.97)}.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}.btn.subtle{background:#f2f5fa;border-color:#edf0f5;color:#365fba}.btn.small{font-size:12px;padding:7px 10px;min-height:32px;border-radius:9px}.btn.danger{color:var(--red);border-color:#f1dfe2}.btn.text{border:0;background:transparent;min-height:0;color:var(--accent);padding:5px}.btn:disabled{opacity:.38}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:17px}.stat{border:1px solid var(--border);background:#fff;border-radius:15px;padding:17px;min-width:0}.stat .k{font-size:12px;color:var(--sub)}.stat strong{display:block;font-size:25px;letter-spacing:-.035em;margin:10px 0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}.stat .d{font-size:11px;color:var(--muted)}.stat.emph{background:#263957;border-color:#263957;color:#fff}.stat.emph .k,.stat.emph .d{color:#c7d2e7}
-.grid{display:grid;grid-template-columns:1.2fr .8fr;gap:15px}.panel{background:#fff;border:1px solid var(--border);border-radius:17px;padding:18px;margin-bottom:15px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:15px}.panel-head h3{font-size:16px;letter-spacing:-.02em;margin:0}.panel-head .desc{font-size:12px;color:var(--sub);margin-top:5px;line-height:1.5}.section-notice{font-size:12px;color:#5f6e82;background:#f0f4fa;border-radius:10px;padding:11px 12px;line-height:1.7;margin-bottom:14px}.section-notice.warn{color:#94672a;background:#fff7e9}
-.student-list,.course-list{display:grid;gap:10px}.student-item{background:#fff;border:1px solid var(--border);border-radius:13px;padding:15px}.student-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.student-main{min-width:0;flex:1}.student-name{font-weight:750;font-size:15px;line-height:1.5;overflow-wrap:anywhere}.student-status{font-size:12px;color:var(--sub);margin-top:5px;line-height:1.5}.student-status b{color:#354051;font-weight:750}.student-count{font-size:12px;color:var(--muted);margin-top:4px}.student-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}.quick{background:var(--accent);border:1px solid var(--accent);color:#fff;border-radius:11px;font-size:14px;font-weight:750;min-height:43px;min-width:72px;padding:10px 12px;white-space:nowrap}.quick:active{transform:scale(.96)}.progress{height:6px;border-radius:9px;background:#edf1f5;overflow:hidden;margin:13px 0 0}.progress>div{height:100%;background:#5b85cd;border-radius:inherit}.student-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}.student-foot span{font-size:12px;color:var(--sub)}.tiny-actions{display:flex;align-items:center;gap:7px}
-.pill{font-size:11px;font-weight:650;border-radius:100px;padding:4px 8px;white-space:nowrap}.pill.done{background:var(--green-soft);color:var(--green)}.pill.pending{background:var(--amber-soft);color:var(--amber)}.pill.low{background:#fff0ea;color:#9f4c38}
-.course-item{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:13px 0;border-top:1px solid #eef0f4}.course-item:first-child{border-top:0;padding-top:0}.course-main{flex:1;min-width:0}.course-name{font-size:14px;font-weight:750}.course-meta{font-size:12px;color:var(--sub);margin-top:6px;line-height:1.6}.course-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:15px;font-weight:750}.course-side{display:flex;align-items:flex-end;flex-direction:column;gap:9px}.course-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px}.muted{color:var(--muted)}.empty{padding:26px 10px 30px;text-align:center;color:var(--sub);font-size:13px;line-height:1.8}.empty strong{display:block;color:var(--ink);font-size:14px;margin-bottom:7px}.empty .btn{margin-top:9px}.search{width:100%;min-height:42px;border:1px solid var(--border);border-radius:11px;padding:10px 12px;background:#fff;color:var(--ink);margin-bottom:14px}.search::placeholder{color:#a8afbc}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.settings-block{border-bottom:1px solid var(--border);padding:15px 0;display:flex;justify-content:space-between;gap:15px;align-items:center}.settings-block:first-child{padding-top:0}.settings-block:last-child{border-bottom:0;padding-bottom:0}.settings-block strong{font-size:14px}.settings-block p{font-size:12px;color:var(--sub);margin:5px 0 0;line-height:1.6}.settings-actions{display:flex;gap:8px;flex-wrap:wrap}.hint{font-size:12px;color:var(--muted);line-height:1.6}.history-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--border)}.history-row:first-child{border-top:0}.history-title{font-size:13px;font-weight:650}.history-meta{font-size:12px;color:var(--sub);margin-top:5px}.history-action{display:flex;align-items:center;gap:8px}
-.nav{position:fixed;z-index:15;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:940px;border-top:1px solid var(--border);background:rgba(255,255,255,.97);backdrop-filter:blur(14px);display:grid;grid-template-columns:repeat(4,1fr);padding:8px 10px calc(9px + env(safe-area-inset-bottom));box-shadow:0 -4px 14px #27324d0a}.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:0;background:transparent;color:#8690a2;font-size:11px;font-weight:650;min-height:53px;border-radius:10px}.nav button.active{color:var(--accent);background:var(--accent-soft)}.nav .ico{font-size:19px;line-height:1}
-dialog{border:0;padding:0;background:#fff;border-radius:18px;width:min(530px,calc(100vw - 22px));max-height:calc(100dvh - 28px);overflow:hidden;box-shadow:0 25px 75px #1c253445}dialog::backdrop{background:#161c2d90;backdrop-filter:blur(2px)}.dialog-body{max-height:calc(100dvh - 28px);overflow:auto;padding:23px}.dialog-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:20px}.dialog-head h3{margin:0;font-size:19px;letter-spacing:-.025em}.dialog-head p{font-size:12px;color:var(--sub);line-height:1.6;margin:6px 0 0}.close{border:0;border-radius:9px;background:#f2f3f6;color:#526073;min-height:34px;min-width:34px;font-size:20px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;min-width:0}.field label,.field .lab{font-size:12px;color:#455064;font-weight:700}.field input,.field select,.field textarea{border:1px solid #dfe4eb;border-radius:10px;background:#fff;color:var(--ink);font-size:15px;min-height:44px;padding:10px 11px;width:100%}.field textarea{min-height:73px;resize:vertical}.field-note{font-size:11px;color:var(--muted);line-height:1.6}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:175px;overflow:auto}.checks label{display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:9px;padding:9px;font-size:13px}.checks input,.check-line input{width:17px;height:17px;accent-color:var(--accent)}.check-line{display:flex;align-items:center;gap:7px;font-size:13px;color:#455064}.dialog-footer{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}.dialog-footer .btn{flex:1}.pay-preview{display:flex;justify-content:space-between;align-items:center;background:#f2f5fa;padding:13px 14px;border-radius:11px;margin-top:5px}.pay-preview span{font-size:13px;color:var(--sub)}.pay-preview strong{font-size:20px;font-variant-numeric:tabular-nums}
-#toast{display:none;position:fixed;z-index:60;left:50%;bottom:101px;transform:translateX(-50%);max-width:calc(100vw - 36px);background:#263957;color:white;box-shadow:0 10px 25px #0003;border-radius:12px;padding:11px 15px;text-align:center;font-size:13px;white-space:normal}
-@media(max-width:720px){.app{padding:20px 14px 116px}.top{align-items:flex-start;flex-wrap:wrap;margin-bottom:24px}.page-head{align-items:flex-start}.page-head h2{font-size:23px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stat{padding:15px}.stat strong{font-size:23px}.grid{grid-template-columns:1fr}.panel{padding:15px}.settings-block{flex-direction:column;align-items:flex-start}.form-row{gap:10px}}
-@media(max-width:390px){.student-item{padding:12px}.student-top{align-items:flex-start}.quick{min-width:65px}.month-picker input{width:130px}.checks{grid-template-columns:1fr}.stat strong{font-size:21px}}
+ 
+:root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",system-ui,sans-serif;color:#302e40;background:#f7f5f7;--ink:#302e40;--sub:#666677;--muted:#9090a1;--border:#ebe6eb;--surface:#fff;--bg:#f7f5f7;--accent:#6657d9;--accent-soft:#f0edff;--green:#307b63;--green-soft:#eaf5f0;--amber:#a06b34;--amber-soft:#fcf0e4;--red:#b64c61;--radius:19px}
+*{box-sizing:border-box}html,body{min-height:100%;margin:0}body{min-height:100dvh;background:radial-gradient(ellipse 390px 350px at 9% 0%,#fde8e5 0%,transparent 82%),radial-gradient(ellipse 440px 350px at 94% 13%,#eeebff 0%,transparent 85%),#f7f5f7}
+button,input,select,textarea{font:inherit}button{cursor:pointer;touch-action:manipulation}button:disabled{opacity:.45;cursor:not-allowed}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #afa7eb;outline-offset:2px}
+.app{max-width:950px;margin:0 auto;padding:28px 21px 134px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:0 0 24px}
+.brand{display:flex;align-items:center;gap:13px}.logo{width:53px;height:53px;border-radius:18px;background:linear-gradient(145deg,#8d80f2,#6551d8);color:#fff;display:grid;place-items:center;font-size:23px;font-weight:800;box-shadow:0 7px 18px rgba(98,80,207,.18)}
+.brand h1{font-size:22px;letter-spacing:-.04em;margin:0;font-weight:800}.brand span{display:block;margin-top:4px;font-size:12px;color:#858195;line-height:1.5}
+.month-picker{display:flex;align-items:center;gap:11px;font-size:12px;color:#7c7889}.month-picker input{width:156px;min-height:44px;padding:10px 13px;border:1px solid #eee7ed;background:#fff;color:var(--ink);border-radius:15px;box-shadow:0 4px 16px #43305608}
+.hero-card{position:relative;isolation:isolate;padding:24px 24px 22px;margin-bottom:16px;border:1px solid #fffdff;background:linear-gradient(127deg,rgba(255,255,255,.94) 10%,rgba(250,246,255,.94) 61%,rgba(255,243,234,.87));border-radius:28px;box-shadow:0 12px 38px #5442760c;overflow:hidden}
+.hero-card:after{content:"";position:absolute;z-index:-1;right:-115px;bottom:-115px;width:270px;height:270px;background:radial-gradient(circle,rgba(247,197,169,.26),transparent 67%)}
+.hero-overline{color:#8177b5;font-size:12px;letter-spacing:.13em;font-weight:800}.hero-card h2{font-size:26px;line-height:1.3;letter-spacing:-.035em;margin:10px 0 8px}.hero-summary{font-size:13px;line-height:1.7;color:#746f83}.hero-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:18px}
+.page-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin:24px 0 17px}.page-head h2{font-size:26px;letter-spacing:-.04em;line-height:1.25;margin:0}.page-head p{font-size:13px;color:var(--sub);margin:7px 0 0;line-height:1.6}.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{appearance:none;border:1px solid #e7e2eb;background:rgba(255,255,255,.94);color:#4a455f;border-radius:13px;min-height:43px;padding:10px 15px;font-size:13px;font-weight:690;display:inline-flex;justify-content:center;align-items:center;gap:7px;white-space:nowrap;transition:transform .1s ease,background .15s ease}.btn:active{transform:scale(.98)}
+.btn.primary{background:linear-gradient(135deg,#7969ec,#6251d2);color:#fff;border-color:#7364e1;box-shadow:0 7px 16px rgba(97,78,213,.16)}.btn.subtle{background:#f1edff;color:#6453ce;border:1px solid #e8e1ff}.btn.small{padding:8px 11px;min-height:34px;border-radius:10px;font-size:12px}.btn.danger{border-color:#f3dadd;background:#fff8fa;color:var(--red)}.btn.text{border:0;min-height:0;padding:5px 3px;background:transparent;color:#6556c9}.btn:disabled{opacity:.38}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:11px;margin-bottom:18px}.stat{background:rgba(255,255,255,.89);border:1px solid #fff;border-radius:22px;padding:20px 18px;min-width:0;box-shadow:0 7px 24px #3e2d6007}.stat .k{font-size:12px;color:#818091}.stat strong{display:block;font-size:25px;letter-spacing:-.04em;margin:12px 0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}.stat .d{font-size:11px;color:#928f9e;line-height:1.5}.stat.emph{background:linear-gradient(145deg,#7b69ed,#6050d3);border-color:#7362e2;color:#fff;box-shadow:0 10px 26px #6856da1f}.stat.emph .k,.stat.emph .d{color:#e9e3ff}
+.grid{display:grid;grid-template-columns:1.12fr .88fr;gap:15px}.panel{background:rgba(255,255,255,.92);border:1px solid #fff;border-radius:23px;padding:19px 19px 20px;margin-bottom:15px;box-shadow:0 8px 25px #58446909;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}.panel-head h3{font-size:16px;letter-spacing:-.025em;margin:0;color:#353146}.panel-head .desc{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.6}
+.section-notice{font-size:12px;color:#656079;background:#f5f1ff;border:1px solid #eee7ff;border-radius:14px;padding:11px 13px;line-height:1.7;margin-bottom:14px}.section-notice.warn{color:#876035;background:#fff6ea;border-color:#f5e7d5}
+.student-list,.course-list{display:grid;gap:10px}.student-item{background:#fff;border:1px solid #efebef;border-radius:18px;padding:15px}.student-top{display:flex;justify-content:space-between;align-items:center;gap:12px}.student-main{min-width:0;flex:1}.student-name{font-weight:750;font-size:15px;line-height:1.5;overflow-wrap:anywhere}.student-status{font-size:12px;color:#686477;margin-top:4px;line-height:1.65}.student-status b{color:#474056;font-weight:760}.student-count{font-size:12px;color:#918c9c;margin-top:3px;line-height:1.6}.student-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}.quick{background:#7262dc;border:1px solid #6a59d1;border-radius:12px;color:#fff;font-size:14px;font-weight:800;min-height:44px;min-width:78px;padding:10px 13px;white-space:nowrap}.quick:active{transform:scale(.97)}
+.progress{height:7px;border-radius:10px;background:#f0edf4;overflow:hidden;margin:12px 0 0}.progress>div{height:100%;background:linear-gradient(90deg,#a69bf6,#7464dc);border-radius:inherit}.student-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:11px}.student-foot span{font-size:12px;color:#858194}.tiny-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}.pill{font-size:11px;font-weight:700;border-radius:100px;padding:4px 8px;white-space:nowrap}.pill.done{background:#eaf7f0;color:#307b63}.pill.pending{background:#fff1e4;color:#a46f37}.pill.low{background:#fff0e9;color:#9c5946}
+.course-item{display:flex;gap:10px;justify-content:space-between;align-items:flex-start;padding:13px 0;border-top:1px solid #f0edf2}.course-item:first-child{border-top:0;padding-top:0}.course-main{flex:1;min-width:0}.course-name{font-size:14px;font-weight:760}.course-meta{font-size:12px;color:#827c90;margin-top:6px;line-height:1.7}.course-money{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:15px;font-weight:770}.course-side{display:flex;align-items:flex-end;flex-direction:column;gap:9px}.course-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:10px}
+.muted{color:var(--muted)}.empty{padding:29px 10px;text-align:center;color:#857f93;font-size:13px;line-height:1.75}.empty strong{display:block;color:#484256;font-size:14px;margin-bottom:6px}.empty .btn{margin-top:9px}
+.search{width:100%;min-height:44px;border:1px solid #eae6ed;border-radius:13px;padding:10px 12px;background:#fff;color:var(--ink);margin-bottom:14px}.search::placeholder{color:#aaa5b4}.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.settings-block{border-bottom:1px solid #efebef;padding:15px 0;display:flex;justify-content:space-between;gap:15px;align-items:center}.settings-block:first-child{padding-top:0}.settings-block:last-child{border-bottom:0;padding-bottom:0}.settings-block strong{font-size:14px}.settings-block p{font-size:12px;color:var(--sub);margin:5px 0 0;line-height:1.6}.settings-actions{display:flex;gap:8px;flex-wrap:wrap}.hint{font-size:12px;color:#8c8799;line-height:1.6}.history-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid #efebef}.history-row:first-child{border-top:0}.history-title{font-size:13px;font-weight:650}.history-meta{font-size:12px;color:var(--sub);margin-top:5px}.history-action{display:flex;align-items:center;gap:8px}
+.nav{position:fixed;z-index:15;left:50%;bottom:9px;transform:translateX(-50%);width:calc(100% - 18px);max-width:900px;display:grid;grid-template-columns:repeat(4,1fr);padding:9px 12px calc(9px + env(safe-area-inset-bottom));background:rgba(255,255,255,.95);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.94);border-radius:23px;box-shadow:0 -6px 30px #352c4814}.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:0;background:transparent;color:#88849b;font-size:11px;font-weight:730;min-height:54px;border-radius:14px}.nav button.active{color:#6351d1;background:#f1edff}.nav .ico{font-size:19px;line-height:1}
+dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,calc(100vw - 22px));max-height:calc(100dvh - 28px);overflow:hidden;box-shadow:0 24px 65px #20173748}dialog::backdrop{background:#1e173684;backdrop-filter:blur(3px)}.dialog-body{max-height:calc(100dvh - 28px);overflow:auto;padding:23px}.dialog-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;margin-bottom:20px}.dialog-head h3{margin:0;font-size:19px;letter-spacing:-.02em}.dialog-head p{font-size:12px;color:var(--sub);line-height:1.6;margin:6px 0 0}.close{border:0;border-radius:11px;background:#f2eff7;color:#5c566c;min-height:36px;min-width:36px;font-size:20px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;min-width:0}.field label,.field .lab{font-size:12px;color:#514a60;font-weight:720}.field input,.field select,.field textarea{border:1px solid #e9e3ed;border-radius:12px;background:#fff;color:var(--ink);font-size:15px;min-height:44px;padding:10px 12px;width:100%}.field textarea{min-height:73px;resize:vertical}.field-note{font-size:11px;color:#8c8799;line-height:1.6}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;max-height:185px;overflow:auto}.checks label{display:flex;align-items:center;gap:7px;border:1px solid #ece7ee;border-radius:11px;padding:10px;font-size:13px}.checks input,.check-line input{width:17px;height:17px;accent-color:var(--accent)}.check-line{display:flex;align-items:center;gap:7px;font-size:13px;color:#514a60}.dialog-footer{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}.dialog-footer .btn{flex:1}.pay-preview{display:flex;justify-content:space-between;align-items:center;background:#f2efff;color:#6257b8;padding:13px 14px;margin:16px 0;border-radius:13px}.pay-preview span{font-size:12px}.pay-preview strong{font-size:20px}
+#toast{display:none;position:fixed;z-index:60;left:50%;bottom:108px;transform:translateX(-50%);max-width:calc(100vw - 36px);background:#343047;color:white;box-shadow:0 10px 25px #0002;border-radius:12px;padding:11px 15px;text-align:center;font-size:13px;white-space:normal}
+@media(max-width:720px){.app{padding:22px 15px 124px}.top{align-items:flex-start;flex-direction:column;gap:14px;margin-bottom:28px}.brand h1{font-size:21px}.month-picker{display:flex;flex-direction:column;align-items:flex-start;gap:7px}.month-picker input{width:156px}.hero-card{padding:21px 18px 20px}.hero-card h2{font-size:25px}.stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.stat{padding:18px 15px}.stat strong{font-size:24px}.grid{grid-template-columns:1fr}.panel{padding:17px 15px}.settings-block{flex-direction:column;align-items:flex-start}.page-head{align-items:flex-start}.page-head h2{font-size:24px}.nav{width:calc(100% - 12px);bottom:6px}}
+@media(max-width:380px){.hero-actions .btn{min-height:41px;padding:9px 12px}.stat strong{font-size:20px}.form-row,.checks{grid-template-columns:1fr}.student-item{padding:13px}.quick{min-width:70px}.brand span{font-size:11px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
 </style>
 </head>
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><div class="logo" aria-hidden="true">课</div><div><h1>课时账本</h1><span>学员考勤 · 课酬统计</span></div></div>
+    <div class="brand"><div class="logo" aria-hidden="true">课</div><div><h1>课时账本</h1><span>课程记录 · 学员考勤 · 课酬统计</span></div></div>
     <label class="month-picker">统计月份 <input type="month" id="monthInput" aria-label="统计月份"></label>
   </header>
   <main id="main" aria-live="polite"></main>
 </div>
 <nav class="nav" aria-label="主导航">
-  <button data-tab="home" class="active" type="button"><span class="ico">▦</span>首页</button>
-  <button data-tab="students" type="button"><span class="ico">☑</span>学员</button>
-  <button data-tab="sessions" type="button"><span class="ico">▤</span>课程</button>
+  <button data-tab="home" class="active" type="button"><span class="ico">⌂</span>总览</button>
+  <button data-tab="sessions" type="button"><span class="ico">🗂</span>课程</button>
+  <button data-tab="students" type="button"><span class="ico">👥</span>学员</button>
   <button data-tab="settings" type="button"><span class="ico">⚙</span>数据</button>
 </nav>
 <dialog id="studentDialog" aria-labelledby="studentDialogTitle"><div class="dialog-body">
-  <div class="dialog-head"><div><h3 id="studentDialogTitle">添加学员</h3><p>按节数记录。报了 30 节课，就填 30。</p></div><button type="button" class="close" data-close="studentDialog" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><h3 id="studentDialogTitle">添加学员</h3><p>设置报名节数，例如 30 节。</p></div><button type="button" class="close" data-close="studentDialog" aria-label="关闭">×</button></div>
   <form id="studentForm"><input type="hidden" id="studentId">
     <div class="field"><label for="studentName">学员姓名 *</label><input id="studentName" maxlength="60" placeholder="输入姓名" required></div>
     <div class="field"><label for="purchasedLessons">报名节数（节）</label><input type="number" min="0" max="100000" step="1" id="purchasedLessons" value="0" required><div class="field-note">例如报了 30 节填 30。填 0 表示不设置课包总数。</div></div>
@@ -56,7 +70,7 @@ dialog{border:0;padding:0;background:#fff;border-radius:18px;width:min(530px,cal
   </form>
 </div></dialog>
 <dialog id="sessionDialog" aria-labelledby="sessionDialogTitle"><div class="dialog-body">
-  <div class="dialog-head"><div><h3 id="sessionDialogTitle">记课程</h3><p>课程记录用于计算老师课酬；勾选到课学员时也会计入考勤。</p></div><button type="button" class="close" data-close="sessionDialog" aria-label="关闭">×</button></div>
+  <div class="dialog-head"><div><h3 id="sessionDialogTitle">记课程</h3><p>记录课程、到课学员和本次课酬。</p></div><button type="button" class="close" data-close="sessionDialog" aria-label="关闭">×</button></div>
   <form id="sessionForm"><input id="sessionId" type="hidden">
     <div class="form-row"><div class="field"><label for="sessionDate">上课日期 *</label><input type="date" id="sessionDate" required></div><div class="field"><label for="duration">授课时长（小时）*</label><input type="number" id="duration" min="0.25" max="24" step="0.25" value="1" required></div></div>
     <div class="field"><label for="sessionTitle">课程名称 *</label><input id="sessionTitle" maxlength="80" placeholder="例如：周六基础班" required></div>
@@ -70,7 +84,7 @@ dialog{border:0;padding:0;background:#fff;border-radius:18px;width:min(530px,cal
 </div></dialog>
 <dialog id="historyDialog" aria-labelledby="historyTitle"><div class="dialog-body">
   <div class="dialog-head"><div><h3 id="historyTitle">考勤明细</h3><p id="historySummary"></p></div><button type="button" class="close" data-close="historyDialog" aria-label="关闭">×</button></div>
-  <div class="section-notice">补记过去的课程：选择日期后点「+1 节」。</div>
+  <div class="section-notice">补记考勤：选日期后点击「+1 节」。</div>
   <div class="form-row" style="align-items:end"><div class="field" style="margin-bottom:0"><label for="manualDate">补记日期</label><input id="manualDate" type="date"></div><div class="field" style="margin-bottom:0"><button class="btn primary" type="button" id="manualAdd">+1 节</button></div></div>
   <div id="historyRows" style="margin-top:19px;max-height:43vh;overflow:auto"></div>
   <div class="dialog-footer"><button class="btn" type="button" data-close="historyDialog">关闭</button></div>
@@ -79,7 +93,7 @@ dialog{border:0;padding:0;background:#fff;border-radius:18px;width:min(530px,cal
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-const KEY='teacher-ledger-v3-local',PREVIOUS=['teacher-ledger-v2-local','teacher-ledger-v1-local'],VERSION=3;
+const KEY='teacher-ledger-v4-local',PREVIOUS=['teacher-ledger-v3-local','teacher-ledger-v2-local','teacher-ledger-v1-local'],VERSION=4;
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const newid=()=>(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():'id'+Date.now()+Math.random().toString(36).slice(2,10);
@@ -90,7 +104,7 @@ const hrs=n=>Number(Number(n||0).toFixed(2)).toString();
 const money=n=>'¥'+euro(n);
 const fee=s=>Math.round((s.payMode==='hourly'?s.duration*s.rate:s.rate)*100)/100;
 const validDate=v=>{if(!/^\d{4}-(0[1-9]|1[0-2])-([0-2]\d|3[01])$/.test(v))return false;const d=new Date(v+'T12:00:00');return !isNaN(d.getTime())&&dateStr(d)===v;};
-const empty=()=>({version:3,students:[],sessions:[],checkins:[],prefs:{}});
+const empty=()=>({version:4,students:[],sessions:[],checkins:[],prefs:{}});
 let storageUsable=true;
 function validate(src){
   if(!src||typeof src!=='object'||!Array.isArray(src.students)||!Array.isArray(src.sessions))throw Error('备份中缺少学员或课程记录');
@@ -131,7 +145,7 @@ function load(){
 }
 let data=load(),tab='home',selectedMonth=thisMonth(),currentHistoryId=null,toastTimeout;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data));storageUsable=true;return true;}catch(e){storageUsable=false;alert('保存失败。请检查浏览器存储权限，并及时导出 JSON 备份。');return false;}}
-if(storageUsable)save(); // 将旧版数据复制到 V3 的存储位置；不删除旧版数据
+if(storageUsable)save(); // 将旧版数据复制到 V4 的存储位置；不删除旧版数据
 function toast(message){const el=$('toast');el.textContent=message;el.style.display='block';clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.style.display='none',2500);}
 function monthName(){return selectedMonth.slice(0,4)+'年'+Number(selectedMonth.slice(5))+'月';}
 function monthSessions(){return data.sessions.filter(s=>s.date.startsWith(selectedMonth)).sort((a,b)=>b.date.localeCompare(a.date)||String(b.createdAt).localeCompare(String(a.createdAt)));}
@@ -164,20 +178,20 @@ function getCourseRow(s,detail=false){
 function renderHome(){
   const ms=monthSessions(),s=stats(ms),students=data.students;
   const sorted=[...students].sort((a,b)=>a.name.localeCompare(b.name,'zh-CN'));
-  return `${header('本月概览',monthName(),'<button class="btn primary" data-action="add-session">+ 记课程</button>')}
-    <div class="stats">${stat('本月课酬',money(s.total),`${s.count} 节课程`,true)}${stat('待结算',money(s.pending),'未结算课酬')}${stat('已结算',money(s.settled),'已确认课酬')}${stat('授课时长',`${hrs(s.hours)} h`,'按课程记录计算')}</div>
-    ${!storageUsable?'<div class="section-notice warn">本地存储不可用，记录可能无法保存，请立即导出备份。</div>':''}
-    <section class="panel"><div class="panel-head"><div><h3>学员考勤</h3><div class="desc">点击 +1，记录今天上了 1 节课。</div></div><button class="btn small" data-action="go-students">查看全部</button></div>
-      <div class="student-list">${sorted.length?sorted.slice(0,8).map(x=>getStudentCard(x,false)).join(''):emptyState('还没有学员','先添加学员，之后直接点 +1 记考勤。','<button class="btn primary" data-action="add-student">添加学员</button>')}</div>
-    </section>
-    <div class="grid"><section class="panel"><div class="panel-head"><div><h3>最近课程</h3><div class="desc">课程用于记录老师课酬。</div></div><button class="btn small" data-action="go-sessions">全部课程</button></div>
-      <div class="course-list">${ms.length?ms.slice(0,4).map(c=>getCourseRow(c)).join(''):emptyState('暂无课程记录','通过「记课程」计算本月课酬。')}</div></section>
-      <section class="panel"><div class="panel-head"><div><h3>快捷操作</h3></div></div><div class="toolbar"><button class="btn primary" data-action="add-student">添加学员</button><button class="btn" data-action="backup">备份数据</button><button class="btn" data-action="export-students">导出学员 CSV</button></div><div class="hint" style="margin-top:16px">+1 仅增加学员考勤，不自动计入老师课酬。课酬在「课程」中记录。</div></section></div>`;
+  const monthlyCheckins=students.reduce((n,x)=>n+lessonCount(x.id,selectedMonth),0);
+  return `<section class="hero-card"><div class="hero-overline">${esc(monthName())}</div><h2>本月记录</h2><div class="hero-summary">课程 ${s.count} 节 · 授课 ${hrs(s.hours)} 小时 · 学员考勤 ${monthlyCheckins} 次</div>
+    <div class="hero-actions"><button class="btn primary" data-action="add-session">＋ 记一节课</button><button class="btn subtle" data-action="add-student">＋ 添加学员</button><button class="btn" data-action="backup">备份数据</button></div></section>
+    <div class="stats">${stat('本月应得课酬',money(s.total),`${s.count} 节课程`,true)}${stat('本月授课时长',`${hrs(s.hours)} h`,'按课程计算')}${stat('已结算',money(s.settled),'本月')}${stat('待结算',money(s.pending),'本月')}</div>
+    ${!storageUsable?'<div class="section-notice warn">本地存储不可用，请先备份数据。</div>':''}
+    <section class="panel"><div class="panel-head"><div><h3>学员考勤</h3><div class="desc">点击 +1 节，直接更新已上节数。</div></div><button class="btn small subtle" data-action="go-students">全部学员</button></div>
+      <div class="student-list">${sorted.length?sorted.slice(0,8).map(x=>getStudentCard(x,false)).join(''):emptyState('暂无学员','添加学员并设置报名节数。','<button class="btn primary" data-action="add-student">添加学员</button>')}</div></section>
+    <section class="panel"><div class="panel-head"><div><h3>最近课程</h3></div><button class="btn small subtle" data-action="go-sessions">全部课程</button></div>
+      <div class="course-list">${ms.length?ms.slice(0,4).map(c=>getCourseRow(c)).join(''):emptyState('暂无课程','录入课程后显示本月课酬。')}</div></section>`;
 }
 function renderStudents(){
   const total=data.students.length,monthTotal=data.students.reduce((n,s)=>n+lessonCount(s.id,selectedMonth),0);
   return `${header('学员考勤',`共 ${total} 名学员 · 本月打卡 ${monthTotal} 节`,'<button class="btn primary" data-action="add-student">+ 添加学员</button>')}
-    <div class="section-notice">点 +1 记今天的课；「明细」可补记或删除。录入课程时选中的到课学员，也计入已上节数。</div>
+    <div class="section-notice">直接点 +1 记考勤；「明细」支持补记和删除。课程关联的出勤也计入节数。</div>
     <input type="search" id="studentSearch" class="search" placeholder="搜索学员姓名" aria-label="搜索学员姓名">
     <div id="studentResults" class="student-list">${total?[...data.students].sort((a,b)=>a.name.localeCompare(b.name,'zh-CN')).map(x=>getStudentCard(x,true)).join(''):emptyState('还没有学员','点击右上角添加。')}</div>`;
 }
@@ -185,7 +199,7 @@ function renderSessions(){
   const ms=monthSessions(),s=stats(ms);
   return `${header('课程与课酬',`${monthName()} · ${s.count} 节课程`,'<button class="btn primary" data-action="add-session">+ 记课程</button>')}
     <div class="stats">${stat('应得课酬',money(s.total),'本月',true)}${stat('已结算',money(s.settled),'本月')}${stat('待结算',money(s.pending),'本月')}${stat('授课时长',`${hrs(s.hours)} h`,'本月')}</div>
-    <div class="section-notice">集体课按一次课程计薪，不随学员人数重复计算。只需给学生 +1 考勤时，不必新建课程。</div>
+    <div class="section-notice">集体课按一节计薪，不按学员人数重复计算。仅做学员考勤可直接点 +1。</div>
     <section class="panel"><div class="panel-head"><div><h3>本月课程</h3></div></div><div class="course-list">${ms.length?ms.map(x=>getCourseRow(x,true)).join(''):emptyState('暂无课程','点击「记课程」添加。')}</div></section>`;
 }
 function settingsRow(title,desc,actions){return `<div class="settings-block"><div><strong>${title}</strong><p>${desc}</p></div><div class="settings-actions">${actions}</div></div>`;}
@@ -198,7 +212,7 @@ function renderSettings(){
     </section>
     <section class="panel"><div class="panel-head"><div><h3>完整数据</h3></div></div>
       ${settingsRow('备份 JSON','保存所有学员、课程、快捷打卡和结算记录。','<button class="btn primary" data-action="backup">下载备份</button>')}
-      ${settingsRow('恢复 JSON','从 V1、V2、V3 备份恢复。会覆盖当前数据。','<button class="btn" data-action="restore">恢复文件</button>')}
+      ${settingsRow('恢复 JSON','从旧版备份恢复。会覆盖当前数据。','<button class="btn" data-action="restore">恢复文件</button>')}
       ${settingsRow('清空全部数据','清空前请先备份。操作不可撤销。','<button class="btn danger" data-action="clear">清空</button>')}
     </section>
     <div class="section-notice warn">记录只保存在当前设备的网页应用中，不会自动与其他手机同步。更新同一网址的程序通常保留数据，但卸载网页 App、清理网站数据或换手机可能导致丢失。请定期下载 JSON 备份。</div>`;
