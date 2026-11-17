@@ -4,7 +4,7 @@
 <meta name="theme-color" content="#f7f5f7"><meta name="description" content="课时账本：个人考勤、班级汇总、分钟制课酬及结算。">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="课时账本">
 <link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./icon-192.png">
-<title>课时账本 V8</title><style>
+<title>课时账本 V9</title><style>
  
 :root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",system-ui,sans-serif;color:#302e40;background:#f7f5f7;--ink:#302e40;--sub:#666677;--muted:#9090a1;--border:#ebe6eb;--surface:#fff;--bg:#f7f5f7;--accent:#6657d9;--accent-soft:#f0edff;--green:#307b63;--green-soft:#eaf5f0;--amber:#a06b34;--amber-soft:#fcf0e4;--red:#b64c61;--radius:19px}
 *{box-sizing:border-box}html,body{min-height:100%;margin:0}body{min-height:100dvh;background:radial-gradient(ellipse 390px 350px at 9% 0%,#fde8e5 0%,transparent 82%),radial-gradient(ellipse 440px 350px at 94% 13%,#eeebff 0%,transparent 85%),#f7f5f7}
@@ -98,12 +98,13 @@ dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,cal
   <button type="button" data-tab="settings"><span class="ico">⚙</span>数据</button>
 </nav>
 <dialog id="studentDialog"><div class="dialog-body">
-  <div class="dialog-head"><div><h3 id="studentDialogTitle">新增学员</h3><p>报名节数和单独授课标准</p></div><button class="close" type="button" data-close="studentDialog">×</button></div>
+  <div class="dialog-head"><div><h3 id="studentDialogTitle">新增学员</h3><p>报名节数与个人课酬</p></div><button class="close" type="button" data-close="studentDialog">×</button></div>
   <form id="studentForm"><input id="studentId" type="hidden">
     <div class="field"><label>姓名 *</label><input id="studentName" maxlength="60" required placeholder="学员姓名"></div>
     <div class="form-row"><div class="field"><label>本学期报名节数</label><input id="studentPurchased" type="number" min="0" max="100000" step="1" value="30"></div><div class="field"><label>默认上课时间</label><input id="studentTime" type="time" value="10:00"></div></div>
     <div class="form-row"><div class="field"><label>单节时长（分钟）</label><input id="studentMinutes" type="number" min="10" max="1440" step="5" value="60"></div><div class="field"><label>单独授课计薪</label><select id="studentPayMode"><option value="perSession">按节</option><option value="hourly">按小时</option></select></div></div>
-    <div class="field"><label>单独授课单价（元）</label><input id="studentRate" type="number" min="0" max="999999" step="0.01" value="0"><div class="field-note">加入班级后，匹配班级时间的考勤按班级计薪，不按人数重复计算。</div></div>
+    <div class="field"><label>一对一课酬单价（元）</label><input id="studentRate" type="number" min="0" max="999999" step="0.01" value="0"></div>
+    <div class="field"><label>班课该学员单价（元，选填）</label><input id="studentClassRate" type="number" min="0" max="999999" step="0.01" placeholder="留空则使用班级每人单价"><div class="field-note">实际到课才产生这名学员的课酬。单独设置后优先使用个人单价，班级按节/按小时计薪方式保持一致。</div></div>
     <div class="field"><label>备注</label><textarea id="studentNotes" maxlength="500"></textarea></div>
     <div class="dialog-footer"><button type="button" class="btn" data-close="studentDialog">取消</button><button class="btn primary" type="submit">保存</button></div>
   </form></div></dialog>
@@ -111,9 +112,9 @@ dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,cal
   <div class="dialog-head"><div><h3 id="groupDialogTitle">新建班级</h3><p>同一班次按日期和开始时间合并</p></div><button class="close" type="button" data-close="groupDialog">×</button></div>
   <form id="groupForm"><input id="groupId" type="hidden"><div class="field"><label>班级名称 *</label><input id="groupName" maxlength="60" required placeholder="周六下午班"></div>
     <div class="form-row"><div class="field"><label>上课时间 *</label><input type="time" id="groupTime" required value="14:00"></div><div class="field"><label>每节时长（分钟）</label><input id="groupMinutes" type="number" min="10" max="1440" step="5" value="90" required></div></div>
-    <div class="form-row"><div class="field"><label>教师课酬计算</label><select id="groupPayMode"><option value="perSession">按节</option><option value="hourly">按小时</option></select></div><div class="field"><label>单价（元）</label><input id="groupRate" type="number" min="0" max="999999" step="0.01" value="120" required></div></div>
+    <div class="form-row"><div class="field"><label>每人到课计薪</label><select id="groupPayMode"><option value="perSession">按节</option><option value="hourly">按小时</option></select></div><div class="field"><label>每位到课学员默认单价（元）</label><input id="groupRate" type="number" min="0" max="999999" step="0.01" value="0" required></div></div>
     <div class="field"><span class="lab">班级成员</span><div id="groupMembers" class="checklist"></div></div>
-    <div class="note-box">已打过个人考勤的学生，归班后会按“日期 + 上课时间”自动汇总。没有时间的旧记录需要先补时间。</div>
+    <div class="note-box">班课费用＝实际到课学员的个人课酬之和。请假、未打卡均不计费。已结算历史金额保留，未结算金额随设置更新。</div>
     <div class="dialog-footer"><button type="button" class="btn" data-close="groupDialog">取消</button><button class="btn primary" type="submit">保存班级</button></div>
   </form></div></dialog>
 <dialog id="attendanceDialog"><div class="dialog-body">
@@ -123,6 +124,14 @@ dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,cal
   <div id="attendanceGrid" class="date-grid"></div>
   <div class="subttl">本学期考勤明细</div><div id="attendanceRows" class="stack" style="max-height:28vh;overflow:auto"></div>
   <div class="dialog-footer"><button type="button" class="btn" data-close="attendanceDialog">完成</button></div>
+</div></dialog>
+<dialog id="groupQuickDialog"><div class="dialog-body">
+  <div class="dialog-head"><div><h3 id="groupQuickTitle">班级到课确认</h3><p>勾选实际到课的学员；缺席者不计费</p></div><button class="close" type="button" data-close="groupQuickDialog">×</button></div>
+  <input id="groupQuickId" type="hidden">
+  <div class="form-row"><div class="field"><label>上课日期</label><input type="date" id="groupQuickDate"></div><div class="field"><label>开课时间</label><input type="text" id="groupQuickClock" disabled></div></div>
+  <div class="field"><span class="lab">实际到课学员</span><div id="groupQuickMembers" class="checklist"></div></div>
+  <div id="groupQuickHint" class="note-box"></div>
+  <div class="dialog-footer"><button type="button" class="btn" data-close="groupQuickDialog">取消</button><button type="button" class="btn primary" data-action="confirm-group-quick">确认本次考勤</button></div>
 </div></dialog>
 <dialog id="groupDetailDialog"><div class="dialog-body">
   <div class="dialog-head"><div><h3 id="groupDetailTitle">班级考勤</h3><p id="groupDetailSub">按个人考勤自动汇总</p></div><button class="close" type="button" data-close="groupDetailDialog">×</button></div>
@@ -140,8 +149,8 @@ dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,cal
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-const VERSION=8,KEY='teacher-ledger-v8-local';
-const PREVIOUS=['teacher-ledger-v7-local','teacher-ledger-v6-local','teacher-ledger-v5-local','teacher-ledger-v4-local','teacher-ledger-v3-local','teacher-ledger-v2-local','teacher-ledger-v1-local'];
+const VERSION=9,KEY='teacher-ledger-v9-local';
+const PREVIOUS=['teacher-ledger-v8-local','teacher-ledger-v7-local','teacher-ledger-v6-local','teacher-ledger-v5-local','teacher-ledger-v4-local','teacher-ledger-v3-local','teacher-ledger-v2-local','teacher-ledger-v1-local'];
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const uid=()=>typeof crypto!=='undefined'&&crypto.randomUUID?crypto.randomUUID():'id'+Date.now()+'-'+Math.random().toString(36).slice(2,10);
@@ -161,15 +170,15 @@ const humanDay=s=>`${Number(s.slice(5,7))}月${Number(s.slice(8,10))}日`;
 const wd=s=>['周日','周一','周二','周三','周四','周五','周六'][new Date(s+'T12:00:00').getDay()];
 const nowIso=()=>new Date().toISOString();
 const semesterDefault=()=>{const now=new Date(),y=now.getFullYear(),m=now.getMonth()+1;if(m>=9)return {start:y+'-09-01',end:(y+1)+'-01-31'};if(m===1)return {start:(y-1)+'-09-01',end:y+'-01-31'};return {start:y+'-02-01',end:y+'-08-31'};};
-const blank=()=>({version:VERSION,students:[],groups:[],attendance:[],legacyLessons:[],settlements:{},paySnapshots:{},leaves:[],semester:semesterDefault()});
+const blank=()=>({version:VERSION,students:[],groups:[],attendance:[],legacyLessons:[],settlements:{},settledTotals:{},paySnapshots:{},leaves:[],semester:semesterDefault()});
 function validateCurrent(s){
   if(Number(s?.version||0)>VERSION)throw Error('备份来自更新版本，不能用旧版覆盖');
   if(!s||!Array.isArray(s.students)||!Array.isArray(s.groups)||!Array.isArray(s.attendance)||!Array.isArray(s.legacyLessons)||!Array.isArray(s.leaves))throw Error('备份数据结构不完整');
   if(s.students.length>50000||s.groups.length>20000||s.attendance.length>500000||s.legacyLessons.length>300000||s.leaves.length>300000)throw Error('备份文件记录过多');
-  const students=s.students.map(x=>({id:String(x.id).slice(0,128),name:String(x.name).trim().slice(0,60),purchasedLessons:Math.floor(within(x.purchasedLessons,0,100000,0)),startTime:validClock(x.startTime)?x.startTime:'10:00',minutes:minuteValue(x.minutes),rate:rateValue(x.rate),payMode:x.payMode==='hourly'?'hourly':'perSession',notes:String(x.notes||'').slice(0,500)}));
+  const students=s.students.map(x=>({id:String(x.id).slice(0,128),name:String(x.name).trim().slice(0,60),purchasedLessons:Math.floor(within(x.purchasedLessons,0,100000,0)),classRate:x.classRate==null||x.classRate===''?null:rateValue(x.classRate),startTime:validClock(x.startTime)?x.startTime:'10:00',minutes:minuteValue(x.minutes),rate:rateValue(x.rate),payMode:x.payMode==='hourly'?'hourly':'perSession',notes:String(x.notes||'').slice(0,500)}));
   if(students.some(x=>!x.id||!x.name)||new Set(students.map(x=>x.id)).size!==students.length)throw Error('学员 ID 或姓名有误');
   const studentIds=new Set(students.map(x=>x.id));
-  const groups=s.groups.map(x=>({id:String(x.id).slice(0,128),name:String(x.name).trim().slice(0,60),studentIds:[...new Set((x.studentIds||[]).filter(id=>studentIds.has(id)))],startTime:validClock(x.startTime)?x.startTime:'',minutes:minuteValue(x.minutes,90),rate:rateValue(x.rate),payMode:x.payMode==='hourly'?'hourly':'perSession',archived:!!x.archived}));
+  const groups=s.groups.map(x=>({id:String(x.id).slice(0,128),name:String(x.name).trim().slice(0,60),studentIds:[...new Set((x.studentIds||[]).filter(id=>studentIds.has(id)))],startTime:validClock(x.startTime)?x.startTime:'',minutes:minuteValue(x.minutes,90),rate:rateValue(x.rate),perStudentRate:rateValue(x.perStudentRate),payMode:x.payMode==='hourly'?'hourly':'perSession',archived:!!x.archived}));
   if(groups.some(x=>!x.id||!x.name)||new Set(groups.map(x=>x.id)).size!==groups.length)throw Error('班级 ID 或名称有误');
   const groupIds=new Set(groups.map(x=>x.id));
   const attendance=s.attendance.map(x=>({id:String(x.id).slice(0,128),studentId:String(x.studentId),date:String(x.date),startTime:validClock(x.startTime)?x.startTime:'',minutes:minuteValue(x.minutes),groupId:groupIds.has(x.groupId)?x.groupId:'',legacySessionId:String(x.legacySessionId||'').slice(0,128),createdAt:String(x.createdAt||'')}));
@@ -179,17 +188,34 @@ function validateCurrent(s){
   const leaves=s.leaves.map(x=>({id:String(x.id),studentId:String(x.studentId),groupId:String(x.groupId),date:String(x.date),startTime:validClock(x.startTime)?x.startTime:'',note:String(x.note||'').slice(0,100)}));
   if(leaves.some(x=>!x.id||!validDay(x.date)||!studentIds.has(x.studentId)||!groupIds.has(x.groupId)))throw Error('请假记录有误');
   const settlements={};if(s.settlements&&typeof s.settlements==='object'){for(const [k,v] of Object.entries(s.settlements).slice(0,600000))if(k.length<=300)settlements[k]=!!v;}
+  // V8 已结算的整班金额，先冻结保留，不擅自拆成人头费用；取消结算后按新版重新计费。
+  const settledTotals={};
+  if(s.settledTotals&&typeof s.settledTotals==='object'){
+    for(const [k,v] of Object.entries(s.settledTotals).slice(0,600000))if(k.length<=300&&v&&typeof v==='object'&&Number.isFinite(Number(v.amount))&&Number(v.amount)>=0){
+      settledTotals[k]={amount:Math.round(Number(v.amount)*100)/100,legacy:!!v.legacy,breakdown:Array.isArray(v.breakdown)?v.breakdown.filter(x=>studentIds.has(x.studentId)).map(x=>({studentId:x.studentId,amount:rateValue(x.amount)})):[]};
+    }
+  }
+  if(Number(s.version||0)===8){
+    // 旧版在同一班级按整班计薪。已经结算的保留原金额、显式提示核对；尚未结算的改按实到人员计算。
+    const rawGroups=new Map((s.groups||[]).map(g=>[String(g.id),g]));
+    for(const [key,paid] of Object.entries(settlements)){
+      if(!paid||!key.startsWith('group|')||settledTotals[key])continue;
+      const bits=key.slice(6).split('|'),raw=rawGroups.get(bits[0]);if(!raw)continue;
+      const cfg=s.paySnapshots?.[key]||raw;
+      settledTotals[key]={amount:fee(minuteValue(cfg.minutes,90),rateValue(cfg.rate),cfg.payMode==='hourly'?'hourly':'perSession'),legacy:true,breakdown:[]};
+    }
+  }
   const paySnapshots={};if(s.paySnapshots&&typeof s.paySnapshots==='object'){for(const [k,v] of Object.entries(s.paySnapshots).slice(0,600000)){if(k.length>300||!v||typeof v!=='object')continue;paySnapshots[k]={minutes:minuteValue(v.minutes),rate:rateValue(v.rate),payMode:v.payMode==='hourly'?'hourly':'perSession'};}}
   const sem=s.semester||semesterDefault();const semester=validDay(sem.start)&&validDay(sem.end)&&sem.start<=sem.end?{start:sem.start,end:sem.end}:semesterDefault();
-  return {version:VERSION,students,groups,attendance,legacyLessons,settlements,paySnapshots,leaves,semester};
+  return {version:VERSION,students,groups,attendance,legacyLessons,settlements,settledTotals,paySnapshots,leaves,semester};
 }
 // V1-V7 课程记录保留为历史课酬。历史个人考勤不凭空猜测上午/下午。
 function migrateLegacy(old){
   const s=blank(),d=semesterDefault();s.semester=d;
   if(!old||!Array.isArray(old.students)||!Array.isArray(old.sessions))throw Error('旧数据格式不正确');
-  for(const x of old.students){if(!x||!x.id||!x.name)continue;s.students.push({id:String(x.id),name:String(x.name),purchasedLessons:Math.floor(within(x.purchasedLessons,0,100000,0)),startTime:'10:00',minutes:Math.round(within(x.duration,0.25,24,1)*60),rate:rateValue(x.rate),payMode:x.payMode==='hourly'?'hourly':'perSession',notes:String(x.notes||'')});}
+  for(const x of old.students){if(!x||!x.id||!x.name)continue;s.students.push({id:String(x.id),name:String(x.name),purchasedLessons:Math.floor(within(x.purchasedLessons,0,100000,0)),classRate:null,startTime:'10:00',minutes:Math.round(within(x.duration,0.25,24,1)*60),rate:rateValue(x.rate),payMode:x.payMode==='hourly'?'hourly':'perSession',notes:String(x.notes||'')});}
   const studentIds=new Set(s.students.map(x=>x.id));
-  for(const g of old.groups||[]){if(!g||!g.id||!g.name)continue;s.groups.push({id:String(g.id),name:String(g.name),studentIds:[...new Set((g.studentIds||[]).filter(x=>studentIds.has(x)))],startTime:'',minutes:Math.round(within(g.duration,0.25,24,1)*60),rate:rateValue(g.rate),payMode:g.payMode==='hourly'?'hourly':'perSession',archived:false});}
+  for(const g of old.groups||[]){if(!g||!g.id||!g.name)continue;s.groups.push({id:String(g.id),name:String(g.name),studentIds:[...new Set((g.studentIds||[]).filter(x=>studentIds.has(x)))],startTime:'',minutes:Math.round(within(g.duration,0.25,24,1)*60),rate:rateValue(g.rate),perStudentRate:0,payMode:g.payMode==='hourly'?'hourly':'perSession',archived:false});}
   const groups=new Set(s.groups.map(g=>g.id));
   for(const x of old.sessions){if(!x||!validDay(x.date)||!x.id)continue;const sid=String(x.id),valid=(x.studentIds||[]).filter(id=>studentIds.has(id));s.legacyLessons.push({id:sid,date:x.date,startTime:'',title:String(x.title||'原课程'),minutes:Math.round(within(x.duration,0.25,24,1)*60),rate:rateValue(x.rate),payMode:x.payMode==='hourly'?'hourly':'perSession',studentIds:[...new Set(valid)],groupId:groups.has(x.groupId)?x.groupId:'',source:x.source||'manual',settled:!!x.settled,notes:String(x.notes||'')});
     for(const id of new Set(valid))s.attendance.push({id:'legacy-att-'+sid+'-'+id,studentId:id,date:x.date,startTime:'',minutes:Math.round(within(x.duration,0.25,24,1)*60),groupId:groups.has(x.groupId)?x.groupId:'',legacySessionId:sid,createdAt:x.createdAt||''});
@@ -198,7 +224,7 @@ function migrateLegacy(old){
   return validateCurrent(s);
 }
 let storageUsable=true;
-function loadData(){for(const k of [KEY,...PREVIOUS]){try{const raw=localStorage.getItem(k);if(!raw)continue;const p=JSON.parse(raw);return Number(p.version||1)===8?validateCurrent(p):migrateLegacy(p);}catch(e){console.warn('读取本地数据失败',k,e);if(k===KEY){storageUsable=false;break;}}}return blank();}
+function loadData(){for(const k of [KEY,...PREVIOUS]){try{const raw=localStorage.getItem(k);if(!raw)continue;const p=JSON.parse(raw);return Number(p.version||1)>=8?validateCurrent(p):migrateLegacy(p);}catch(e){console.warn('读取本地数据失败',k,e);if(k===KEY){storageUsable=false;break;}}}return blank();}
 let data=loadData(),tab='home',selectedMonth=thisMonth(),periodMode='month';
 let customStart=thisMonth()+'-01',customEnd=today(),currentStudent='',currentGroup='',currentSlotKey='';
 let toastTimer;
@@ -235,28 +261,37 @@ function groupEvents(){
   for(const a of data.attendance){const g=resolveGroup(a);if(!g)continue;const time=effectiveTime(a,g);if(!time)continue;const k=slotId(g.id,a.date,time);if(!map.has(k))map.set(k,{key:k,group:g,date:a.date,time,attendance:[]});map.get(k).attendance.push(a);}
   return [...map.values()].sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time));
 }
+function groupStudentRate(a,g){
+ const st=studentBy(a.studentId);
+ const rate=st?.classRate==null?g.perStudentRate:st.classRate;
+ const mode=g.payMode;
+ return {studentId:a.studentId,studentName:st?.name||'未知学员',minutes:a.minutes,rate:rateValue(rate),payMode:mode,amount:fee(a.minutes,rateValue(rate),mode)};
+}
+function classBreakdown(e){const byStudent=new Map();for(const a of e.attendance){if(!byStudent.has(a.studentId))byStudent.set(a.studentId,groupStudentRate(a,e.group));}return [...byStudent.values()];}
 function freezePaySnapshots(){
- for(const e of groupEvents()){
-  const k='group|'+e.key;if(hasLegacyGroupCover(e.group.id,e.date,e.time,e.attendance))continue;
-  if(!data.paySnapshots[k])data.paySnapshots[k]={minutes:e.group.minutes,rate:e.group.rate,payMode:e.group.payMode};
- }
+ // 单独授课保留初次记录时的计薪标准。班课未结算前按个人单价实时计算，结算时冻结总额。
  for(const a of data.attendance){if(resolveGroup(a)||a.legacySessionId)continue;const st=studentBy(a.studentId),k='solo|'+a.id;
   if(st&&!data.paySnapshots[k])data.paySnapshots[k]={minutes:a.minutes,rate:st.rate,payMode:st.payMode};
  }
 }
 function teacherLessons(){
- const out=data.legacyLessons.map(x=>({key:'legacy|'+x.id,legacyId:x.id,date:x.date,time:x.startTime,title:x.title,minutes:x.minutes,rate:x.rate,payMode:x.payMode,amount:fee(x.minutes,x.rate,x.payMode),settled:x.settled,source:'legacy',studentIds:x.studentIds}));
+ const out=data.legacyLessons.map(x=>({key:'legacy|'+x.id,legacyId:x.id,date:x.date,time:x.startTime,title:x.title,minutes:x.minutes,rate:x.rate,payMode:x.payMode,amount:fee(x.minutes,x.rate,x.payMode),settled:x.settled,source:'legacy',studentIds:x.studentIds,breakdown:[]}));
  for(const e of groupEvents()){
    if(hasLegacyGroupCover(e.group.id,e.date,e.time,e.attendance))continue;
    const k='group|'+e.key,g=e.group;
-   const cfg=data.paySnapshots[k]||{minutes:g.minutes,rate:g.rate,payMode:g.payMode};
-   out.push({key:k,date:e.date,time:e.time,title:g.name,minutes:cfg.minutes,rate:cfg.rate,payMode:cfg.payMode,amount:fee(cfg.minutes,cfg.rate,cfg.payMode),settled:!!data.settlements[k],source:'group',groupId:g.id,studentIds:[...new Set(e.attendance.map(a=>a.studentId))]});
+   const lines=classBreakdown(e),calculated=lines.reduce((v,x)=>v+x.amount,0),settled=!!data.settlements[k];
+   const locked=settled?data.settledTotals?.[k]:null;
+   out.push({key:k,date:e.date,time:e.time,title:g.name,minutes:g.minutes,rate:g.perStudentRate,payMode:g.payMode,amount:locked?locked.amount:Math.round(calculated*100)/100,settled,source:'group',groupId:g.id,studentIds:lines.map(x=>x.studentId),breakdown:locked?.legacy?[]:locked?.breakdown?.length?locked.breakdown.map(x=>({...x,studentName:studentBy(x.studentId)?.name||'历史学员'})):lines,legacyLocked:!!locked?.legacy,unpriced:!locked&&lines.some(x=>x.rate===0)});
  }
- for(const a of data.attendance){if(resolveGroup(a)||a.legacySessionId)continue;const s=studentBy(a.studentId);if(!s)continue;const k='solo|'+a.id;
-   const cfg=data.paySnapshots[k]||{minutes:a.minutes,rate:s.rate,payMode:s.payMode};
-   out.push({key:k,date:a.date,time:a.startTime,title:s.name+' · 单独授课',minutes:cfg.minutes,rate:cfg.rate,payMode:cfg.payMode,amount:fee(cfg.minutes,cfg.rate,cfg.payMode),settled:!!data.settlements[k],source:'solo',studentIds:[s.id]});
+ for(const a of data.attendance){if(resolveGroup(a)||a.legacySessionId)continue;const st=studentBy(a.studentId);if(!st)continue;const k='solo|'+a.id;
+   const cfg=data.paySnapshots[k]||{minutes:a.minutes,rate:st.rate,payMode:st.payMode};
+   const value=fee(cfg.minutes,cfg.rate,cfg.payMode);
+   out.push({key:k,date:a.date,time:a.startTime,title:st.name+' · 单独授课',minutes:cfg.minutes,rate:cfg.rate,payMode:cfg.payMode,amount:value,settled:!!data.settlements[k],source:'solo',studentIds:[st.id],breakdown:[{studentId:st.id,studentName:st.name,minutes:cfg.minutes,rate:cfg.rate,payMode:cfg.payMode,amount:value}]});
  }
  return out.sort((a,b)=>b.date.localeCompare(a.date)||(b.time||'').localeCompare(a.time||''));
+}
+function studentPayStats(sid){const entries=periodTeachers().filter(x=>x.source!=='legacy'&&!x.legacyLocked).flatMap(x=>x.breakdown.filter(b=>b.studentId===sid).map(b=>({...b,settled:x.settled})));
+ return {count:entries.length,total:entries.reduce((v,x)=>v+x.amount,0),settled:entries.filter(x=>x.settled).reduce((v,x)=>v+x.amount,0),pending:entries.filter(x=>!x.settled).reduce((v,x)=>v+x.amount,0)};
 }
 function periodTeachers(){return teacherLessons().filter(x=>inside(x.date));}
 function totalPay(list){return {count:list.length,minutes:list.reduce((n,x)=>n+x.minutes,0),amount:list.reduce((n,x)=>n+x.amount,0),settled:list.filter(x=>x.settled).reduce((n,x)=>n+x.amount,0),pending:list.filter(x=>!x.settled).reduce((n,x)=>n+x.amount,0)};}
@@ -268,11 +303,13 @@ function navButton(t,label){return `<button class="btn small subtle" data-tab="$
 function hero(){const t=totalPay(periodTeachers()),a=data.attendance.filter(x=>inside(x.date)).length;
  return `<section class="hero-card"><div class="hero-overline">${esc(rangeLabel())}</div><h2>本期记录</h2><div class="hero-summary">教师授课 ${t.count} 节 · ${t.minutes} 分钟 · 学员出勤 ${a} 次</div><div class="hero-actions"><button class="btn primary" data-action="add-student">+ 学员</button><button class="btn subtle" data-action="add-group">+ 班级</button><button class="btn" data-action="backup">备份数据</button></div></section>`;
 }
-function studentCard(s){const total=semesterLessons(s.id),rem=s.purchasedLessons-total,grp=data.groups.filter(g=>!g.archived&&g.studentIds.includes(s.id)).map(g=>g.name+' '+(g.startTime||'未设时间')).join('、');
- return `<article class="rowcard"><div class="row-flex"><div class="main"><strong>${esc(s.name)}</strong><div class="meta">本学期 ${total} / ${s.purchasedLessons||'未设置'} 节${s.purchasedLessons?` · 剩余 ${rem} 节`:''}<br>本期 ${periodLessons(s.id)} 节 ${grp?` · ${esc(grp)}`:''}</div></div><div class="row-actions"><button class="btn small primary" data-action="attendance" data-id="${esc(s.id)}">日期打卡</button><button class="btn small" data-action="edit-student" data-id="${esc(s.id)}">编辑</button></div></div></article>`;
+function studentCard(s){const total=semesterLessons(s.id),rem=s.purchasedLessons-total,grp=data.groups.filter(g=>!g.archived&&g.studentIds.includes(s.id)).map(g=>g.name+' '+(g.startTime||'未设时间')).join('、'),p=studentPayStats(s.id);
+ return `<article class="rowcard"><div class="row-flex"><div class="main"><strong>${esc(s.name)}</strong><div class="meta">本学期 ${total} / ${s.purchasedLessons||'未设置'} 节${s.purchasedLessons?` · 剩余 ${rem} 节`:''}<br>本期 ${periodLessons(s.id)} 节 · 课酬 ${money(p.total)}${grp?`<br>${esc(grp)}`:''}</div></div><div class="row-actions"><button class="btn small primary" data-action="quick-add" data-id="${esc(s.id)}">+1 节</button><button class="btn small subtle" data-action="attendance" data-id="${esc(s.id)}">按日期补记</button><button class="btn small" data-action="edit-student" data-id="${esc(s.id)}">编辑</button></div></div></article>`;
 }
-function groupCard(g){const x=groupStats(g);return `<article class="rowcard"><div class="row-flex"><div class="main"><strong>${esc(g.name)}</strong> <span class="pill">${g.studentIds.length} 人</span><div class="meta">${esc(g.startTime||'未设置时间')} · 每节 ${g.minutes} 分钟 · ${g.payMode==='hourly'?'每小时':'每节'} ${money(g.rate)}<br>本期上课 ${x.sessions} 次 · 到课 ${x.arrivals} 人次 · 标记请假 ${x.leaves} 人次</div></div><div class="row-actions"><button class="btn small primary" data-action="group-detail" data-id="${esc(g.id)}">班级考勤</button><button class="btn small" data-action="edit-group" data-id="${esc(g.id)}">编辑</button></div></div></article>`;}
-function teacherCard(x){return `<article class="rowcard"><div class="row-flex"><div class="main"><strong>${esc(x.title)}</strong> <span class="pill ${x.settled?'done':'warn'}">${x.settled?'已结算':'未结算'}</span><div class="meta">${esc(x.date)} ${esc(timeLabel(x.time))} · ${x.minutes} 分钟 · ${x.source==='group'?'班课':x.source==='solo'?'单独授课':'旧课程'}${x.payMode==='hourly'?' · 按小时':' · 按节'}</div></div><div class="row-actions"><strong class="number">${money(x.amount)}</strong><button class="btn small ${x.settled?'':'subtle'}" data-action="toggle-settle" data-key="${esc(x.key)}">${x.settled?'取消结算':'标记已结算'}</button></div></div></article>`;}
+function groupCard(g){const x=groupStats(g);return `<article class="rowcard"><div class="row-flex"><div class="main"><strong>${esc(g.name)}</strong> <span class="pill">${g.studentIds.length} 人</span><div class="meta">${esc(g.startTime||'未设置时间')} · 每节 ${g.minutes} 分钟 · 每人${g.payMode==='hourly'?'每小时':'每节'}默认 ${money(g.perStudentRate)}<br>本期上课 ${x.sessions} 次 · 到课 ${x.arrivals} 人次 · 标记请假 ${x.leaves} 人次</div></div><div class="row-actions"><button class="btn small primary" data-action="group-quick" data-id="${esc(g.id)}">全班 +1</button><button class="btn small subtle" data-action="group-detail" data-id="${esc(g.id)}">班级考勤</button><button class="btn small" data-action="edit-group" data-id="${esc(g.id)}">编辑</button></div></div></article>`;}
+function teacherCard(x){const lines=x.source==='group'?`<div class="meta">到课 ${x.studentIds.length} 人 · ${x.breakdown.map(b=>esc(b.studentName)+' '+money(b.amount)).join('；')||'旧金额待核对'}</div>`:'';
+ return `<article class="rowcard"><div class="row-flex"><div class="main"><strong>${esc(x.title)}</strong> <span class="pill ${x.settled?'done':'warn'}">${x.settled?'已结算':'未结算'}</span><div class="meta">${esc(x.date)} ${esc(timeLabel(x.time))} · ${x.minutes} 分钟 · ${x.source==='group'?'班课':x.source==='solo'?'单独授课':'旧课程'}</div>${lines}${x.legacyLocked?'<div class="meta" style="color:#b64c61">旧版整班金额已保留，取消结算后会按到课人数重算</div>':''}${x.unpriced?'<div class="meta" style="color:#b64c61">部分学员的到课单价为 0，请检查</div>':''}</div><div class="row-actions"><strong class="number">${money(x.amount)}</strong><button class="btn small ${x.settled?'':'subtle'}" data-action="toggle-settle" data-key="${esc(x.key)}">${x.settled?'取消结算':'标记已结算'}</button></div></div></article>`;
+}
 function renderHome(){const t=totalPay(periodTeachers()),a=data.attendance.filter(x=>inside(x.date)).length;
  return `${hero()}<div class="stats">${stat('应得课酬',money(t.amount),`${t.count} 节`,true)}${stat('授课时长',t.minutes+' 分钟','按实际开课计算')}${stat('已结算',money(t.settled),'本期')}${stat('未结算',money(t.pending),'本期')}</div>
    ${!storageUsable?'<div class="note-box important">本地存储不可用，请立即备份。</div>':''}
@@ -284,8 +321,8 @@ function renderStudents(){return `<section class="panel"><div class="panel-head"
 function renderGroups(){const g=data.groups.filter(g=>!g.archived);const unknown=data.attendance.filter(a=>!a.startTime).length;
  return `<section class="panel"><div class="panel-head"><div><h3>班级汇总</h3><div class="desc">以个人考勤为准，上午、下午按具体时间分开。</div></div><button class="btn small primary" data-action="add-group">+ 新建班级</button></div>${unknown?`<div class="note-box">有 ${unknown} 条旧考勤缺少时间。可在学员考勤明细里补时间，或在班级下使用「批量归入班次时间」。</div>`:''}<div class="stack">${g.length?g.map(groupCard).join(''):'<div class="small-empty">暂无班级。先到「学员」录入个人考勤，再建班级。</div>'}</div></section>`;}
 function renderPay(){const lessons=periodTeachers(),t=totalPay(lessons);
- return `<section class="panel"><div class="panel-head"><div><h3>教师课酬</h3><div class="desc">${esc(rangeLabel())} · 共 ${lessons.length} 节</div></div><button class="btn small subtle" data-action="settle-all">本期全部结算</button></div><div class="stats">${stat('应得',money(t.amount),'本期',true)}${stat('已结算',money(t.settled),'本期')}${stat('未结算',money(t.pending),'本期')}${stat('授课分钟',t.minutes+' 分钟',`${t.count} 节`)}</div><div class="note-box">班课以同一班级、同一日期和同一开课时间合并，只计老师一节课。旧版已有课程收入单独保留，防止重复计薪。</div><div class="stack">${lessons.length?lessons.map(teacherCard).join(''):'<div class="small-empty">本期暂无课酬记录。</div>'}</div></section>`;}
-function renderSettings(){const sem=data.semester,unknown=data.attendance.filter(a=>!a.startTime).length;return `<section class="panel"><div class="panel-head"><div><h3>学期与数据</h3></div></div><div class="subttl">本学期日期</div><div class="form-row"><label class="field">学期开始<input type="date" id="semesterStart" value="${sem.start}"></label><label class="field">学期结束<input type="date" id="semesterEnd" value="${sem.end}"></label></div><div class="split-actions"><button class="btn small primary" data-action="save-semester">保存学期日期</button></div><div class="border-top"><div class="subttl">导出</div><div class="split-actions"><button class="btn small" data-action="export-students">学员 CSV</button><button class="btn small" data-action="export-attendance">个人考勤 CSV</button><button class="btn small" data-action="export-groups">班级考勤 CSV</button><button class="btn small" data-action="export-pay">课酬 CSV</button></div></div><div class="border-top"><div class="subttl">备份与恢复</div><div class="split-actions"><button class="btn small primary" data-action="backup">完整 JSON 备份</button><button class="btn small" data-action="restore">从备份恢复</button></div><p class="meta">旧记录首次计算的课酬单价会保存快照，修改班级设置不会追改旧工资。数据只保存在此设备当前应用的本地存储中。更新应用前先备份，Safari 与桌面网页 App 可能互不共享数据。</p></div><div class="border-top"><div class="meta">旧记录中有 ${unknown} 条未指定上课时间。新版不会据此猜测上午班或下午班，也不会擅自重复计薪。</div></div></section>`;}
+ return `<section class="panel"><div class="panel-head"><div><h3>教师课酬</h3><div class="desc">${esc(rangeLabel())} · 共 ${lessons.length} 节</div></div><button class="btn small subtle" data-action="settle-all">本期全部结算</button></div><div class="stats">${stat('应得',money(t.amount),'本期',true)}${stat('已结算',money(t.settled),'本期')}${stat('未结算',money(t.pending),'本期')}${stat('授课分钟',t.minutes+' 分钟',`${t.count} 节`)}</div><div class="note-box">同班同日同时间只算教师一节课，课酬按实际到课学生的个人单价求和。请假、未打卡不计费。旧版整班已结算金额保留，需核对。</div><section class="panel"><div class="panel-head"><div><h3>学员课酬明细</h3><div class="desc">本期按人统计（不含无法拆分的旧版整班金额）</div></div><button class="btn small" data-action="export-person-pay">导出逐人 CSV</button></div><div class="stack">${data.students.map(st=>{const a=studentPayStats(st.id);return `<div class="payline"><span>${esc(st.name)} · 到课 ${a.count} 次</span><strong>${money(a.total)} <span class="tiny">已结算 ${money(a.settled)} / 未结算 ${money(a.pending)}</span></strong></div>`;}).join('')||'<div class="small-empty">暂无学员。</div>'}</div></section><div class="stack">${lessons.length?lessons.map(teacherCard).join(''):'<div class="small-empty">本期暂无课酬记录。</div>'}</div></section>`;}
+function renderSettings(){const sem=data.semester,unknown=data.attendance.filter(a=>!a.startTime).length;return `<section class="panel"><div class="panel-head"><div><h3>学期与数据</h3></div></div><div class="subttl">本学期日期</div><div class="form-row"><label class="field">学期开始<input type="date" id="semesterStart" value="${sem.start}"></label><label class="field">学期结束<input type="date" id="semesterEnd" value="${sem.end}"></label></div><div class="split-actions"><button class="btn small primary" data-action="save-semester">保存学期日期</button></div><div class="border-top"><div class="subttl">导出</div><div class="split-actions"><button class="btn small" data-action="export-students">学员 CSV</button><button class="btn small" data-action="export-attendance">个人考勤 CSV</button><button class="btn small" data-action="export-groups">班级考勤 CSV</button><button class="btn small" data-action="export-pay">课酬 CSV</button><button class="btn small" data-action="export-person-pay">逐人课酬 CSV</button></div></div><div class="border-top"><div class="subttl">备份与恢复</div><div class="split-actions"><button class="btn small primary" data-action="backup">完整 JSON 备份</button><button class="btn small" data-action="restore">从备份恢复</button></div><p class="meta">一对一原有课酬标准保留；班课按个人到课计费，已结算金额冻结，未结算随单价更新。数据只保存在此设备当前应用的本地存储中。更新应用前先备份，Safari 与桌面网页 App 可能互不共享数据。</p></div><div class="border-top"><div class="meta">旧记录中有 ${unknown} 条未指定上课时间。新版不会据此猜测上午班或下午班，也不会擅自重复计薪。</div></div></section>`;}
 function render(){
  $('monthInput').value=selectedMonth;$('periodMode').value=periodMode;$('customPeriod').hidden=periodMode!=='custom';$('customStart').value=customStart;$('customEnd').value=customEnd;
  document.querySelectorAll('nav [data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===tab));
@@ -293,17 +330,24 @@ function render(){
 }
 function openDialog(id){$(id).showModal();}
 function closeDialog(id){$(id).close();}
-function openStudent(id=''){const s=studentBy(id);$('studentDialogTitle').textContent=s?'编辑学员':'新增学员';$('studentId').value=s?.id||'';$('studentName').value=s?.name||'';$('studentPurchased').value=s?.purchasedLessons??30;$('studentTime').value=s?.startTime||'10:00';$('studentMinutes').value=s?.minutes??60;$('studentPayMode').value=s?.payMode||'perSession';$('studentRate').value=s?.rate??0;$('studentNotes').value=s?.notes||'';openDialog('studentDialog');}
+function openStudent(id=''){const s=studentBy(id);$('studentDialogTitle').textContent=s?'编辑学员':'新增学员';$('studentId').value=s?.id||'';$('studentName').value=s?.name||'';$('studentPurchased').value=s?.purchasedLessons??30;$('studentTime').value=s?.startTime||'10:00';$('studentMinutes').value=s?.minutes??60;$('studentPayMode').value=s?.payMode||'perSession';$('studentRate').value=s?.rate??0;$('studentClassRate').value=s?.classRate??'';$('studentNotes').value=s?.notes||'';openDialog('studentDialog');}
 function saveStudent(e){e.preventDefault();const old=studentBy($('studentId').value),name=$('studentName').value.trim(),count=Number($('studentPurchased').value),minutes=Number($('studentMinutes').value),rate=Number($('studentRate').value),startTime=$('studentTime').value;
  if(!name||!Number.isInteger(count)||count<0||count>100000||minutes<10||minutes>1440||!Number.isInteger(minutes)||!validClock(startTime)||!Number.isFinite(rate)||rate<0||rate>999999)return toast('检查学员姓名、节数、时间和课酬');
- const next={id:old?.id||uid(),name:name.slice(0,60),purchasedLessons:count,startTime,minutes,rate,payMode:$('studentPayMode').value,notes:$('studentNotes').value.trim()};
+ const classRateRaw=$('studentClassRate').value.trim();if(classRateRaw!==''&&(!Number.isFinite(Number(classRateRaw))||Number(classRateRaw)<0||Number(classRateRaw)>999999))return toast('请检查班课个人单价');
+ const next={id:old?.id||uid(),name:name.slice(0,60),purchasedLessons:count,startTime,minutes,rate,classRate:classRateRaw===''?null:Number(classRateRaw),payMode:$('studentPayMode').value,notes:$('studentNotes').value.trim()};
  if(old)data.students=data.students.map(x=>x.id===old.id?next:x);else data.students.push(next);persist();closeDialog('studentDialog');tab='students';render();toast('学员已保存');}
-function openGroup(id=''){const g=groupBy(id);$('groupDialogTitle').textContent=g?'编辑班级':'新建班级';$('groupId').value=g?.id||'';$('groupName').value=g?.name||'';$('groupTime').value=g?.startTime||'14:00';$('groupMinutes').value=g?.minutes??90;$('groupRate').value=g?.rate??120;$('groupPayMode').value=g?.payMode||'perSession';$('groupMembers').innerHTML=data.students.map(s=>`<label><input type="checkbox" value="${esc(s.id)}" ${(g?.studentIds||[]).includes(s.id)?'checked':''}>${esc(s.name)}</label>`).join('')||'<div class="meta">先添加学员</div>';openDialog('groupDialog');}
+function openGroup(id=''){const g=groupBy(id);$('groupDialogTitle').textContent=g?'编辑班级':'新建班级';$('groupId').value=g?.id||'';$('groupName').value=g?.name||'';$('groupTime').value=g?.startTime||'14:00';$('groupMinutes').value=g?.minutes??90;$('groupRate').value=g?.perStudentRate??0;$('groupPayMode').value=g?.payMode||'perSession';$('groupMembers').innerHTML=data.students.map(s=>`<label><input type="checkbox" value="${esc(s.id)}" ${(g?.studentIds||[]).includes(s.id)?'checked':''}>${esc(s.name)}</label>`).join('')||'<div class="meta">先添加学员</div>';openDialog('groupDialog');}
 function saveGroup(e){e.preventDefault();const old=groupBy($('groupId').value),name=$('groupName').value.trim(),ids=[...$('groupMembers').querySelectorAll('input:checked')].map(x=>x.value),time=$('groupTime').value,mins=Number($('groupMinutes').value),rate=Number($('groupRate').value);
  if(!name||!ids.length||!validClock(time)||!Number.isInteger(mins)||mins<10||mins>1440||!Number.isFinite(rate)||rate<0||rate>999999)return toast('请检查班级、时间、学员及课酬');
  const conflicts=data.groups.filter(x=>x.id!==old?.id&&x.startTime===time&&x.studentIds.some(i=>ids.includes(i)));if(conflicts.length){alert('有学员同时属于其他相同开课时间的班级。请先调整，避免自动归班歧义：'+conflicts.map(x=>x.name).join('、'));return;}
- const next={id:old?.id||uid(),name:name.slice(0,60),studentIds:ids,startTime:time,minutes:mins,rate,payMode:$('groupPayMode').value,archived:false};
- if(old)data.groups=data.groups.map(x=>x.id===old.id?next:x);else data.groups.push(next);
+ const next={id:old?.id||uid(),name:name.slice(0,60),studentIds:ids,startTime:time,minutes:mins,rate:old?.rate??0,perStudentRate:rate,payMode:$('groupPayMode').value,archived:false};
+ if(old){
+  const paid=data.settlements||{};
+  const locked=data.attendance.some(a=>resolveGroup(a)?.id===old.id&&paid['group|'+slotId(old.id,a.date,a.startTime||old.startTime)]);
+  const removed=old.studentIds.filter(id=>!ids.includes(id));
+  if(locked&&(time!==old.startTime||removed.length)){alert('本班有已结算的历史课次。请先核对并取消相应课程结算，再修改开课时间或移出原有学员。');return;}
+  data.groups=data.groups.map(x=>x.id===old.id?next:x);
+ }else data.groups.push(next);
  persist();closeDialog('groupDialog');tab='groups';render();toast('班级已保存，个人考勤将自动匹配');}
 function slotOptions(s){let opts=[`<option value="solo">单独授课 · ${esc(s.startTime)}</option>`];for(const g of data.groups.filter(g=>!g.archived&&g.studentIds.includes(s.id)&&g.startTime))opts.push(`<option value="group:${esc(g.id)}">${esc(g.name)} · ${g.startTime}</option>`);opts.push('<option value="custom">自定义时间</option>');return opts.join('');}
 function currentSlot(){const s=studentBy(currentStudent),v=$('attendanceSlot').value;if(!s)return {startTime:'',groupId:'',minutes:60};if(v.startsWith('group:')){const g=groupBy(v.slice(6));return g?{startTime:g.startTime,groupId:g.id,minutes:g.minutes}:{startTime:s.startTime,groupId:'',minutes:s.minutes};}if(v==='custom')return {startTime:$('attendanceCustomTime').value||s.startTime,groupId:'',minutes:Number($('attendanceMinutes').value)||s.minutes};return {startTime:s.startTime,groupId:'',minutes:Number($('attendanceMinutes').value)||s.minutes};}
@@ -327,15 +371,56 @@ function updateAttendanceView(){if(!currentStudent||!studentBy(currentStudent))r
  const records=data.attendance.filter(a=>a.studentId===s.id&&inside(a.date,data.semester)).sort((a,b)=>b.date.localeCompare(a.date)||(b.startTime||'').localeCompare(a.startTime||''));
  $('attendanceRows').innerHTML=records.length?records.map(a=>{const gg=resolveGroup(a);return `<div class="rowcard"><div class="row-flex"><div class="main"><strong>${esc(a.date)} ${esc(timeLabel(a.startTime||(gg?.startTime||'')))}</strong><div class="meta">${a.minutes} 分钟 · ${gg?esc(gg.name):'单独考勤'}${a.legacySessionId?' · 旧课程记录':''}</div></div><div class="row-actions"><button class="btn small subtle" data-action="fix-time" data-id="${esc(a.id)}">${a.startTime?'改时间':'补时间'}</button><button class="btn small danger" data-action="delete-attendance" data-id="${esc(a.id)}">删除</button></div></div></div>`;}).join(''):'<div class="small-empty">本学期暂无考勤。</div>';
 }
+function renderGroupQuickMembers(){
+ const g=groupBy($('groupQuickId').value),d=$('groupQuickDate').value;if(!g||!validDay(d))return;
+ $('groupQuickMembers').innerHTML=studentsIn(g).map(st=>{
+  const already=data.attendance.some(a=>a.studentId===st.id&&a.date===d&&a.startTime===g.startTime);
+  const leave=data.leaves.some(l=>l.groupId===g.id&&l.date===d&&l.startTime===g.startTime&&l.studentId===st.id);
+  return `<label><input type="checkbox" value="${esc(st.id)}" ${already?'checked disabled':leave?'':'checked'}>${esc(st.name)}${already?'（已打卡）':leave?'（请假）':''}</label>`;
+ }).join('');updateGroupQuickHint();
+}
+function openGroupQuick(id){
+ const g=groupBy(id);if(!g||!validClock(g.startTime))return toast('请先给班级设置开课时间');
+ $('groupQuickId').value=id;$('groupQuickDate').value=today();$('groupQuickClock').value=g.startTime;
+ $('groupQuickTitle').textContent=g.name+' · 记一节课';
+ renderGroupQuickMembers();openDialog('groupQuickDialog');
+}
+function updateGroupQuickHint(){
+ const g=groupBy($('groupQuickId').value),d=$('groupQuickDate').value;if(!g||!validDay(d))return;
+ const inputs=[...$('groupQuickMembers').querySelectorAll('input')];
+ const n=inputs.filter(x=>x.checked&&!x.disabled).length;
+ $('groupQuickHint').textContent=`待新增 ${n} 人考勤。已打过卡的自动跳过，明确标记请假的默认不选。教师授课只记一次，课酬按实际到课学员分别计算。`;
+}
+function confirmGroupQuick(){
+ const g=groupBy($('groupQuickId').value),d=$('groupQuickDate').value;if(!g||!validDay(d)||!validClock(g.startTime))return toast('请检查班级和日期');
+ const k='group|'+slotId(g.id,d,g.startTime);if(data.settlements[k])return toast('本次课程已结算，请先取消结算再补考勤');
+ const selected=[...$('groupQuickMembers').querySelectorAll('input:checked')].map(x=>x.value);let added=0;
+ for(const sid of selected){if(data.attendance.some(a=>a.studentId===sid&&a.date===d&&a.startTime===g.startTime))continue;
+  data.attendance.push({id:uid(),studentId:sid,date:d,startTime:g.startTime,minutes:g.minutes,groupId:g.id,legacySessionId:'',createdAt:nowIso()});added++;
+ }
+ if(!added)return toast('所选学员都已记录，或没有勾选到课学员');
+ persist();closeDialog('groupQuickDialog');render();toast(`${g.name} · 新增 ${added} 人考勤`);
+}
+function quickAdd(id){
+ const s=studentBy(id);if(!s)return;
+ const groups=data.groups.filter(g=>!g.archived&&g.studentIds.includes(id)&&validClock(g.startTime));
+ if(groups.length>1){openAttendance(id);toast('该学员在多个班级，请先选对应班次');return;}
+ const g=groups[0],date=today(),time=g?.startTime||s.startTime,mins=g?.minutes||s.minutes;
+ if(!validClock(time))return toast('请先设置学员或班级上课时间');
+ if(data.attendance.some(a=>a.studentId===id&&a.date===date&&a.startTime===time))return toast('今天该时间已打卡；补记其他日期请点「按日期补记」');
+ if(g&&data.settlements['group|'+slotId(g.id,date,time)])return toast('该班课已经结算，请先取消结算');
+ data.attendance.push({id:uid(),studentId:id,date,startTime:time,minutes:mins,groupId:g?.id||'',legacySessionId:'',createdAt:nowIso()});
+ persist();render();toast(`${s.name} +1 节 · ${humanDay(date)} ${time}`);
+}
 function setAttendanceDay(date,on){const s=studentBy(currentStudent),spec=currentSlot();if(!s||!validDay(date)||!validClock(spec.startTime)||spec.minutes<10||spec.minutes>1440)return toast('请确认日期、时间和分钟数');
  const matching=data.attendance.filter(a=>a.studentId===s.id&&a.date===date&&attendanceMatchesSlot(a,spec));
- if(on){if(matching.length)return;const duplicate=data.attendance.some(a=>a.studentId===s.id&&a.date===date&&a.startTime===spec.startTime);if(duplicate)return toast('这个日期和时间已记录过课，请检查其它班次');
+ if(on){if(matching.length)return;if(spec.groupId&&data.settlements['group|'+slotId(spec.groupId,date,spec.startTime)]){updateAttendanceView();return toast('该班课已结算，请先取消结算再补打卡');}const duplicate=data.attendance.some(a=>a.studentId===s.id&&a.date===date&&a.startTime===spec.startTime);if(duplicate)return toast('这个日期和时间已记录过课，请检查其它班次');
  data.attendance.push({id:uid(),studentId:s.id,date,startTime:spec.startTime,minutes:spec.minutes,groupId:spec.groupId,legacySessionId:'',createdAt:nowIso()});
  }else{if(!matching.length)return;const toDelete=matching[0];if(toDelete.legacySessionId&&!confirm('这是从旧课程导入的考勤，删除后旧课程课酬仍保留。确定删除此考勤吗？')){updateAttendanceView();return;}
  if(!canRemoveAttendance(toDelete)){updateAttendanceView();return;}data.attendance=data.attendance.filter(a=>a.id!==toDelete.id);delete data.settlements['solo|'+toDelete.id];}
  persist();updateAttendanceView();render();}
 function canRemoveAttendance(a){const g=resolveGroup(a);if(!g){if(data.settlements['solo|'+a.id]){toast('这节课已结算，请先取消结算');return false;}return true;}
- const all=attendeesFor(g.id,a.date,effectiveTime(a,g));if(all.length===1&&data.settlements['group|'+slotId(g.id,a.date,effectiveTime(a,g))]){toast('班课已结算，请先取消结算');return false;}return true;}
+ const all=attendeesFor(g.id,a.date,effectiveTime(a,g));if(data.settlements['group|'+slotId(g.id,a.date,effectiveTime(a,g))]){toast('班课已结算，请先取消结算');return false;}return true;}
 function deleteAttendance(id){const a=data.attendance.find(x=>x.id===id);if(!a)return;if(!confirm('确定删除该条个人考勤？'))return;if(!canRemoveAttendance(a))return;
  if(a.legacySessionId)toast('旧课程课酬记录仍保留，请核对');data.attendance=data.attendance.filter(x=>x.id!==id);delete data.settlements['solo|'+id];persist();updateAttendanceView();render();}
 function fixTime(id){const a=data.attendance.find(x=>x.id===id);if(!a)return;const spec=currentSlot();if(!validClock(spec.startTime))return toast('请先选一个有效的时间');if(data.attendance.some(x=>x.id!==a.id&&x.studentId===a.studentId&&x.date===a.date&&x.startTime===spec.startTime)){toast('同一日期和时间已经有考勤');return;}
@@ -349,8 +434,8 @@ function refreshGroupDetail(){const g=groupBy(currentGroup);if(!g)return;const e
  ${events.length?events.map(e=>groupEventCard(e)).join(''):'<div class="small-empty">暂无匹配的班级考勤。先在学员的个人考勤里填写日期和班级时间。</div>'}`;}
 function groupEventCard(e){const g=e.group,present=[...new Set(e.attendance.map(a=>a.studentId))],leaveIds=g.studentIds.filter(id=>groupStatus(g,e.date,e.time,id)==='leave'),notMarked=g.studentIds.filter(id=>!present.includes(id)&&!leaveIds.includes(id));
  const p=teacherLessons().find(l=>l.source==='group'&&l.groupId===g.id&&l.date===e.date&&l.time===e.time);const legacyCovered=hasLegacyGroupCover(g.id,e.date,e.time,e.attendance);
- return `<div class="rowcard" style="margin-bottom:10px"><div class="row-flex"><div class="main"><strong>${esc(e.date)} ${wd(e.date)} · ${esc(e.time)}</strong><div class="meta">到课 ${present.length} / ${g.studentIds.length} · 请假 ${leaveIds.length} · 未打卡 ${notMarked.length} · 授课 ${g.minutes} 分钟</div></div><span class="pill ${p?.settled?'done':''}">${legacyCovered?'旧课酬已保留':p?money(p.amount):'未单独计薪'}</span></div>
- <table class="attendance-table"><thead><tr><th>学员</th><th>状态</th><th>处理</th></tr></thead><tbody>${studentsIn(g).map(s=>{const status=groupStatus(g,e.date,e.time,s.id);return `<tr><td>${esc(s.name)}</td><td class="${status==='present'?'status-present':status==='leave'?'status-leave':'status-none'}">${status==='present'?'✓ 到课':status==='leave'?'请假':'未打卡'}</td><td>${status==='present'?'—':`<button class="no-outline" data-action="mark-leave" data-group="${esc(g.id)}" data-id="${esc(s.id)}" data-date="${e.date}" data-time="${e.time}">${status==='leave'?'修改':'标记请假'}</button>`}</td></tr>`;}).join('')}</tbody></table></div>`;}
+ return `<div class="rowcard" style="margin-bottom:10px"><div class="row-flex"><div class="main"><strong>${esc(e.date)} ${wd(e.date)} · ${esc(e.time)}</strong><div class="meta">到课 ${present.length} / ${g.studentIds.length} · 请假 ${leaveIds.length} · 未打卡 ${notMarked.length} · 授课 ${g.minutes} 分钟</div></div><span class="pill ${p?.settled?'done':''}">${legacyCovered?'旧课酬已保留':p?money(p.amount):'尚未计薪'}</span></div>
+ <table class="attendance-table"><thead><tr><th>学员</th><th>状态</th><th>本次课酬</th><th>处理</th></tr></thead><tbody>${studentsIn(g).map(s=>{const status=groupStatus(g,e.date,e.time,s.id),payline=p?.breakdown.find(b=>b.studentId===s.id);return `<tr><td>${esc(s.name)}</td><td class="${status==='present'?'status-present':status==='leave'?'status-leave':'status-none'}">${status==='present'?'✓ 到课':status==='leave'?'请假':'未打卡'}</td><td>${status==='present'?(payline?money(payline.amount):'旧金额待核对'):money(0)}</td><td>${status==='present'?'—':`<button class="no-outline" data-action="mark-leave" data-group="${esc(g.id)}" data-id="${esc(s.id)}" data-date="${e.date}" data-time="${e.time}">${status==='leave'?'修改':'标记请假'}</button>`}</td></tr>`;}).join('')}</tbody></table></div>`;}
 function backfillTimes(id){const g=groupBy(id);if(!g||!validClock(g.startTime))return toast('先给班级设置开始时间');const r=range();const candidates=data.attendance.filter(a=>!a.startTime&&inside(a.date,r)&&g.studentIds.includes(a.studentId)&&(!a.groupId||a.groupId===g.id)&&!data.groups.some(gg=>gg.id!==g.id&&gg.studentIds.includes(a.studentId)&&gg.startTime===g.startTime));
  const byKey=new Map();for(const a of candidates){const k=a.studentId+'|'+a.date;byKey.set(k,(byKey.get(k)||0)+1);}
  const eligible=candidates.filter(a=>byKey.get(a.studentId+'|'+a.date)===1&&!data.attendance.some(b=>b.id!==a.id&&b.studentId===a.studentId&&b.date===a.date&&b.startTime===g.startTime));
@@ -378,18 +463,37 @@ function saveLeave(){const groupId=$('leaveGroup').value,studentId=$('leaveStude
  data.leaves=data.leaves.filter(l=>!(l.groupId===groupId&&l.studentId===studentId&&l.date===date&&l.startTime===time));
  if($('leaveStatus').value==='leave')data.leaves.push({id:uid(),groupId,studentId,date,startTime:time,note:$('leaveNote').value.trim().slice(0,100)});
  persist();closeDialog('leaveDialog');refreshGroupDetail();render();toast('请假状态已更新');}
-function toggleSettle(key){const p=teacherLessons().find(l=>l.key===key);if(!p)return;if(p.source==='legacy'){const x=data.legacyLessons.find(l=>l.id===p.legacyId);if(x)x.settled=!x.settled;}else data.settlements[key]=!p.settled;
- persist();render();toast('结算状态已更新');}
-function settleAll(){const list=periodTeachers().filter(l=>!l.settled);if(!list.length)return toast('本期没有待结算课程');if(!confirm(`确认将本期 ${list.length} 节课程的课酬全部标记为已结算？`))return;
- for(const l of list){if(l.source==='legacy'){const x=data.legacyLessons.find(x=>x.id===l.legacyId);if(x)x.settled=true;}else data.settlements[l.key]=true;}persist();render();toast('本期已结算');}
+function setLessonSettlement(l,on){
+ if(l.source==='legacy'){const x=data.legacyLessons.find(x=>x.id===l.legacyId);if(x)x.settled=on;return;}
+ data.settlements[l.key]=on;
+ if(l.source==='group'){
+  if(on){data.settledTotals[l.key]={amount:l.amount,legacy:false,breakdown:l.breakdown.map(b=>({studentId:b.studentId,amount:b.amount}))};}
+  else delete data.settledTotals[l.key];
+ }
+}
+function toggleSettle(key){const lesson=teacherLessons().find(l=>l.key===key);if(!lesson)return;
+ if(lesson.settled&&lesson.legacyLocked&&!confirm('这是 V8 已结算的整班课酬。取消结算后会改按实际到课人数和每人单价重新计算，原金额保留在之前的备份中。确定吗？'))return;
+ if(!lesson.settled&&lesson.unpriced&&!confirm('有学员的课酬单价仍为 0。确定按目前金额结算吗？'))return;
+ setLessonSettlement(lesson,!lesson.settled);persist();render();toast('结算状态已更新');
+}
+function settleAll(){const list=periodTeachers().filter(l=>!l.settled);if(!list.length)return toast('本期没有待结算课程');
+ if(list.some(l=>l.unpriced)){toast('请先检查有 0 元个人单价的课程，再逐条结算');return;}
+ if(!confirm(`确认将本期 ${list.length} 节课程全部标记为已结算？`))return;
+ for(const l of list)setLessonSettlement(l,true);persist();render();toast('本期已结算');
+}
 function csvCell(x){let v=String(x??'');if(/^[\s]*[=+@\-]/.test(v)&&!Number.isFinite(Number(v)))v="'"+v;return '"'+v.replaceAll('"','""')+'"';}
 function csv(rows){return '\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n';}
 function download(text,name,mime='text/csv;charset=utf-8'){const u=URL.createObjectURL(new Blob([text],{type:mime}));let a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),10000);toast('已开始下载 '+name);}
-function backup(){download(JSON.stringify({app:'TeacherLedger',version:VERSION,exportedAt:nowIso(),data},null,2),'课时账本_V8完整备份_'+today()+'.json','application/json;charset=utf-8');}
+function backup(){download(JSON.stringify({app:'TeacherLedger',version:VERSION,exportedAt:nowIso(),data},null,2),'课时账本_V9完整备份_'+today()+'.json','application/json;charset=utf-8');}
 function exportStudents(){const r=[['学员','报名总节数','本学期已上节数','本学期剩余节数','学期开始','学期结束','本期上课节数','所在班级']];data.students.forEach(s=>r.push([s.name,s.purchasedLessons,semesterLessons(s.id),s.purchasedLessons? s.purchasedLessons-semesterLessons(s.id):'未设置',data.semester.start,data.semester.end,periodLessons(s.id),data.groups.filter(g=>g.studentIds.includes(s.id)).map(g=>g.name).join('、')]));download(csv(r),'学员学期课时_'+today()+'.csv');}
 function exportAttendance(){const r=[['日期','开课时间','时长(分钟)','学员','班级','历史课程关联','统计期间']];data.attendance.filter(a=>inside(a.date)).forEach(a=>r.push([a.date,a.startTime||'未设置',a.minutes,studentBy(a.studentId)?.name||'',resolveGroup(a)?.name||'单独授课',a.legacySessionId?'是':'否',rangeLabel()]));download(csv(r),'个人考勤_'+selectedMonth+'.csv');}
 function exportGroups(){const r=[['班级','日期','开课时间','上课时长(分钟)','学员','考勤状态','实际教师开课','统计期间']];for(const e of groupEvents().filter(e=>inside(e.date))){for(const id of e.group.studentIds){const status=groupStatus(e.group,e.date,e.time,id);r.push([e.group.name,e.date,e.time,e.group.minutes,studentBy(id)?.name||'',status==='present'?'到课':status==='leave'?'请假':'未打卡',1,rangeLabel()]);}}download(csv(r),'班级考勤_'+selectedMonth+'.csv');}
-function exportPay(){const r=[['日期','时间','课程/班级','时长(分钟)','计薪方式','课酬(元)','结算状态','统计期间']];periodTeachers().forEach(x=>r.push([x.date,x.time||'未设置',x.title,x.minutes,x.payMode==='hourly'?'按小时':'按节',x.amount,x.settled?'已结算':'未结算',rangeLabel()]));download(csv(r),'教师课酬_'+selectedMonth+'.csv');}
+function exportPay(){const r=[['日期','时间','课程/班级','授课时长(分钟)','实际到课人数','课酬(元)','结算状态','说明','统计期间']];periodTeachers().forEach(x=>r.push([x.date,x.time||'未设置',x.title,x.minutes,x.studentIds?.length||0,x.amount,x.settled?'已结算':'未结算',x.legacyLocked?'旧版整班已结算金额需核对':x.unpriced?'部分学员单价为0':'',rangeLabel()]));download(csv(r),'教师课酬_'+selectedMonth+'.csv');}
+function exportPersonPay(){
+ const rows=[['日期','开始时间','班级/课程','学员','实际到课','上课分钟','单价','计薪方式','本次个人课酬(元)','结算状态','统计期间']];
+ for(const l of periodTeachers())for(const b of l.breakdown||[])rows.push([l.date,l.time||'',l.title,b.studentName||studentBy(b.studentId)?.name||'',1,b.minutes??l.minutes,b.rate??'',b.payMode==='hourly'?'按小时':'按节',b.amount,l.settled?'已结算':'未结算',rangeLabel()]);
+ download(csv(rows),'逐人课酬_'+selectedMonth+'.csv');
+}
 function saveSemester(){const a=$('semesterStart').value,b=$('semesterEnd').value;if(!validDay(a)||!validDay(b)||a>b)return toast('学期日期不合法');data.semester={start:a,end:b};persist();render();toast('学期日期已更新');}
 
 // DOM event delegation. 个人打卡是唯一原始来源；班级考勤与课酬均为计算结果。
@@ -398,13 +502,13 @@ document.addEventListener('click',e=>{
  const close=e.target.closest('[data-close]');if(close){closeDialog(close.dataset.close);return;}
  const btn=e.target.closest('[data-action]');if(!btn)return;const a=btn.dataset.action,id=btn.dataset.id;
  if(a==='add-student')openStudent();else if(a==='edit-student')openStudent(id);
- else if(a==='add-group')openGroup();else if(a==='edit-group')openGroup(id);
- else if(a==='attendance')openAttendance(id);else if(a==='group-detail')openGroupDetail(id);
+ else if(a==='add-group')openGroup();else if(a==='edit-group')openGroup(id);else if(a==='group-quick')openGroupQuick(id);else if(a==='confirm-group-quick')confirmGroupQuick();
+ else if(a==='quick-add')quickAdd(id);else if(a==='attendance')openAttendance(id);else if(a==='group-detail')openGroupDetail(id);
  else if(a==='delete-attendance')deleteAttendance(id);else if(a==='fix-time')fixTime(id);
  else if(a==='backfill-time')backfillTimes(id);else if(a==='link-existing')linkExisting(id);else if(a==='mark-leave')openLeave(btn);
  else if(a==='toggle-settle')toggleSettle(btn.dataset.key);else if(a==='settle-all')settleAll();
  else if(a==='backup')backup();else if(a==='restore'){$('importFile').value='';$('importFile').click();}
- else if(a==='export-students')exportStudents();else if(a==='export-attendance')exportAttendance();else if(a==='export-groups')exportGroups();else if(a==='export-pay')exportPay();
+ else if(a==='export-person-pay')exportPersonPay();else if(a==='export-students')exportStudents();else if(a==='export-attendance')exportAttendance();else if(a==='export-groups')exportGroups();else if(a==='export-pay')exportPay();
  else if(a==='save-semester')saveSemester();
 });
 document.addEventListener('change',e=>{
@@ -414,13 +518,13 @@ document.addEventListener('change',e=>{
  if(e.target.id==='attendanceMinutes')updateAttendanceView();
 });
 $('studentForm').addEventListener('submit',saveStudent);$('groupForm').addEventListener('submit',saveGroup);
-$('leaveSave').addEventListener('click',saveLeave);
+$('leaveSave').addEventListener('click',saveLeave);$('groupQuickDate').addEventListener('change',renderGroupQuickMembers);$('groupQuickMembers').addEventListener('change',updateGroupQuickHint);
 $('monthInput').addEventListener('change',e=>{if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value;render();}});
 $('periodMode').addEventListener('change',e=>{periodMode=e.target.value;render();});
 $('customStart').addEventListener('change',e=>{if(validDay(e.target.value)){customStart=e.target.value;render();}});
 $('customEnd').addEventListener('change',e=>{if(validDay(e.target.value)){customEnd=e.target.value;render();}});
 $('importFile').addEventListener('change',async e=>{const file=e.target.files?.[0];if(!file)return;
- try{if(file.size>20*1024*1024)throw Error('文件超过 20MB');const raw=JSON.parse(await file.text()),p=raw.data||raw,next=Number(p.version||1)===8?validateCurrent(p):migrateLegacy(p);
+ try{if(file.size>20*1024*1024)throw Error('文件超过 20MB');const raw=JSON.parse(await file.text()),p=raw.data||raw,next=Number(p.version||1)>=8?validateCurrent(p):migrateLegacy(p);
  if(!confirm(`恢复后将覆盖现有全部记录（${next.students.length} 名学员、${next.attendance.length} 条个人考勤）。请先备份当前数据。\n确定继续？`))return;
  data=next;persist();tab='home';render();toast('备份恢复成功');}catch(err){alert('恢复失败：'+err.message);}finally{e.target.value='';}});
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d)d.close();}));

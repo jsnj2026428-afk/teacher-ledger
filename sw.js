@@ -1,4 +1,4 @@
-const CACHE_NAME='teacherledger-pwa-v8-20261117';
+const CACHE_NAME='teacherledger-pwa-v9-20261117';
 const ASSETS=['./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE_NAME).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([
