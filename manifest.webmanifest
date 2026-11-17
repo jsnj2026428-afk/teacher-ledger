@@ -1,25 +1,15 @@
 {
-  "name": "课时账本",
-  "short_name": "课时账本",
-  "description": "课程考勤、班课课酬、15号发薪统计",
-  "lang": "zh-CN",
-  "start_url": "./index.html",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#f7f5f7",
-  "theme_color": "#f7f5f7",
-  "icons": [
-    {
-      "src": "./icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "./icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+  "name":"课时账本 · TeacherLedger",
+  "short_name":"课时账本",
+  "description":"课程、个人考勤、班级汇总和课酬",
+  "lang":"zh-CN",
+  "start_url":"./index.html",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f7f5f7",
+  "theme_color":"#6657d9",
+  "icons":[
+    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
   ]
 }
