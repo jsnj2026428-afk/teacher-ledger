@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-title" content="课时账本">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icon-192.png">
-<title>课时账本 V4</title>
+<title>课时账本 V5</title>
 <style>
  
 :root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB",system-ui,sans-serif;color:#302e40;background:#f7f5f7;--ink:#302e40;--sub:#666677;--muted:#9090a1;--border:#ebe6eb;--surface:#fff;--bg:#f7f5f7;--accent:#6657d9;--accent-soft:#f0edff;--green:#307b63;--green-soft:#eaf5f0;--amber:#a06b34;--amber-soft:#fcf0e4;--red:#b64c61;--radius:19px}
@@ -43,6 +43,19 @@ dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,cal
 @media(max-width:380px){.hero-actions .btn{min-height:41px;padding:9px 12px}.stat strong{font-size:20px}.form-row,.checks{grid-template-columns:1fr}.student-item{padding:13px}.quick{min-width:70px}.brand span{font-size:11px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 
+
+/* 班级管理：沿用 V4 的紫色卡片样式 */
+.group-list{display:grid;gap:10px}
+.group-item{border:1px solid #ece7f2;border-radius:18px;padding:15px;background:linear-gradient(110deg,#fff,#fbf9ff)}
+.group-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.group-name{font-size:15px;font-weight:770;line-height:1.5}
+.group-members{font-size:12px;color:#797287;line-height:1.75;margin-top:5px;overflow-wrap:anywhere}
+.group-ops{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.group-ops .quick{min-width:100px}
+.group-selection{display:grid;grid-template-columns:1fr 1fr;gap:7px;max-height:235px;overflow:auto}
+.group-selection label{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid #eee8f2;border-radius:11px;font-size:13px;background:#fff;min-width:0}
+.group-selection input{width:17px;height:17px;accent-color:var(--accent)}
+@media(max-width:380px){.group-selection{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -69,6 +82,25 @@ dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,cal
     <div class="dialog-footer"><button type="button" class="btn" data-close="studentDialog">取消</button><button type="submit" class="btn primary">保存</button></div>
   </form>
 </div></dialog>
+
+<dialog id="groupDialog" aria-labelledby="groupDialogTitle"><div class="dialog-body">
+  <div class="dialog-head"><div><h3 id="groupDialogTitle">新建班级</h3><p>选择哪些学员属于这个班。</p></div><button type="button" class="close" data-close="groupDialog" aria-label="关闭">×</button></div>
+  <form id="groupForm"><input type="hidden" id="groupId">
+    <div class="field"><label for="groupName">班级名称 *</label><input id="groupName" maxlength="60" required placeholder="例如：周六吉他基础班"></div>
+    <div class="field"><span class="lab">班级学员（可多选）</span><div class="group-selection" id="groupStudents"></div></div>
+    <div class="dialog-footer"><button type="button" class="btn" data-close="groupDialog">取消</button><button type="submit" class="btn primary">保存班级</button></div>
+  </form>
+</div></dialog>
+<dialog id="groupAttendanceDialog" aria-labelledby="groupAttendanceTitle"><div class="dialog-body">
+  <div class="dialog-head"><div><h3 id="groupAttendanceTitle">班级考勤</h3><p>补记日期，勾选本次实际到课学员。</p></div><button type="button" class="close" data-close="groupAttendanceDialog" aria-label="关闭">×</button></div>
+  <form id="groupAttendanceForm"><input type="hidden" id="attendanceGroupId">
+    <div class="field"><label for="groupAttendanceDate">上课日期</label><input type="date" id="groupAttendanceDate" required></div>
+    <div class="field"><span class="lab">实际到课学员</span><div class="group-selection" id="groupAttendanceStudents"></div>
+      <div class="field-note">同一天已有考勤或课程记录的学员会跳过，避免重复计数。</div></div>
+    <label class="check-line"><input type="checkbox" id="groupAllowRepeat"> 同一天确实上了第二节课，允许再次记 1 节</label>
+    <div class="dialog-footer"><button type="button" class="btn" data-close="groupAttendanceDialog">取消</button><button type="submit" class="btn primary">记入考勤</button></div>
+  </form>
+</div></dialog>
 <dialog id="sessionDialog" aria-labelledby="sessionDialogTitle"><div class="dialog-body">
   <div class="dialog-head"><div><h3 id="sessionDialogTitle">记课程</h3><p>记录课程、到课学员和本次课酬。</p></div><button type="button" class="close" data-close="sessionDialog" aria-label="关闭">×</button></div>
   <form id="sessionForm"><input id="sessionId" type="hidden">
@@ -93,7 +125,7 @@ dialog{border:0;padding:0;background:#fff;border-radius:23px;width:min(530px,cal
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 'use strict';
-const KEY='teacher-ledger-v4-local',PREVIOUS=['teacher-ledger-v3-local','teacher-ledger-v2-local','teacher-ledger-v1-local'],VERSION=4;
+const KEY='teacher-ledger-v5-local',PREVIOUS=['teacher-ledger-v4-local','teacher-ledger-v3-local','teacher-ledger-v2-local','teacher-ledger-v1-local'],VERSION=5;
 const $=id=>document.getElementById(id);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const newid=()=>(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():'id'+Date.now()+Math.random().toString(36).slice(2,10);
@@ -104,13 +136,13 @@ const hrs=n=>Number(Number(n||0).toFixed(2)).toString();
 const money=n=>'¥'+euro(n);
 const fee=s=>Math.round((s.payMode==='hourly'?s.duration*s.rate:s.rate)*100)/100;
 const validDate=v=>{if(!/^\d{4}-(0[1-9]|1[0-2])-([0-2]\d|3[01])$/.test(v))return false;const d=new Date(v+'T12:00:00');return !isNaN(d.getTime())&&dateStr(d)===v;};
-const empty=()=>({version:4,students:[],sessions:[],checkins:[],prefs:{}});
+const empty=()=>({version:VERSION,students:[],sessions:[],checkins:[],groups:[],prefs:{}});
 let storageUsable=true;
 function validate(src){
   if(!src||typeof src!=='object'||!Array.isArray(src.students)||!Array.isArray(src.sessions))throw Error('备份中缺少学员或课程记录');
   if(Number(src.version||1)>VERSION)throw Error('这是新版本备份，请升级课时账本后恢复');
-  if(src.students.length>100000||src.sessions.length>300000||((src.checkins||[]).length>600000))throw Error('记录数超出限制');
-  const studentIds=new Set(),sessionIds=new Set(),checkinIds=new Set();
+  if(src.students.length>100000||src.sessions.length>300000||((src.checkins||[]).length>600000||((src.groups||[]).length>10000)))throw Error('记录数超出限制');
+  const studentIds=new Set(),sessionIds=new Set(),checkinIds=new Set(),groupIds=new Set();
   const students=src.students.map(x=>{
     if(!x||typeof x.id!=='string'||!x.id||x.id.length>128||studentIds.has(x.id)||typeof x.name!=='string'||!x.name.trim())throw Error('学员数据有误或 ID 重复');
     studentIds.add(x.id);
@@ -125,16 +157,24 @@ function validate(src){
     if(!Number.isFinite(duration)||duration<.25||duration>24||!Number.isFinite(rate)||rate<0||rate>999999||!['hourly','perSession'].includes(x.payMode)||!Array.isArray(x.studentIds)||x.studentIds.some(sid=>!studentIds.has(sid)))throw Error('课程时长、单价或到课学员有误');
     return {id:x.id,date:x.date,title:x.title.slice(0,80),duration,rate,payMode:x.payMode,studentIds:[...new Set(x.studentIds)],settled:!!x.settled,settledAt:x.settled?String(x.settledAt||''):'',notes:String(x.notes||'').slice(0,500),createdAt:String(x.createdAt||'')};
   });
+
+  if(src.groups!=null&&!Array.isArray(src.groups))throw Error('班级数据格式不正确');
+  const groups=(src.groups||[]).map(g=>{
+    if(!g||typeof g.id!=='string'||!g.id||g.id.length>128||groupIds.has(g.id)||typeof g.name!=='string'||!g.name.trim()||!Array.isArray(g.studentIds))throw Error('班级记录有误或 ID 重复');
+    if(g.studentIds.length>10000||g.studentIds.some(sid=>!studentIds.has(sid)))throw Error('班级包含不存在的学员');
+    groupIds.add(g.id);
+    return {id:g.id,name:g.name.trim().slice(0,60),studentIds:[...new Set(g.studentIds)],createdAt:String(g.createdAt||'')};
+  });
   if(src.checkins!=null&&!Array.isArray(src.checkins))throw Error('打卡记录格式不正确');
   const checkins=(src.checkins||[]).map(x=>{
     if(!x||typeof x.id!=='string'||!x.id||x.id.length>128||checkinIds.has(x.id)||!studentIds.has(x.studentId)||!validDate(x.date))throw Error('打卡记录无效');
     checkinIds.add(x.id);
     const session=sessions.find(s=>s.id===x.linkedSessionId);
     const linkedSessionId=session&&session.studentIds.includes(x.studentId)&&session.date===x.date?x.linkedSessionId:'';
-    return {id:x.id,studentId:x.studentId,date:x.date,createdAt:String(x.createdAt||''),linkedSessionId};
+    return {id:x.id,studentId:x.studentId,date:x.date,createdAt:String(x.createdAt||''),linkedSessionId,groupId:String(x.groupId||'').slice(0,128),groupName:String(x.groupName||'').slice(0,60),batchId:String(x.batchId||'').slice(0,128)};
   });
   const prefs=src.prefs&&typeof src.prefs==='object'?{lastTitle:String(src.prefs.lastTitle||'').slice(0,80),lastRate:Number.isFinite(Number(src.prefs.lastRate))?Number(src.prefs.lastRate):100,lastMode:src.prefs.lastMode==='perSession'?'perSession':'hourly'}:{};
-  return {version:VERSION,students,sessions,checkins,prefs};
+  return {version:VERSION,students,sessions,checkins,groups,prefs};
 }
 function load(){
   for(const key of [KEY,...PREVIOUS]){
@@ -145,7 +185,7 @@ function load(){
 }
 let data=load(),tab='home',selectedMonth=thisMonth(),currentHistoryId=null,toastTimeout;
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data));storageUsable=true;return true;}catch(e){storageUsable=false;alert('保存失败。请检查浏览器存储权限，并及时导出 JSON 备份。');return false;}}
-if(storageUsable)save(); // 将旧版数据复制到 V4 的存储位置；不删除旧版数据
+if(storageUsable)save(); // 将旧版数据复制到 V5 的存储位置；不删除旧版数据
 function toast(message){const el=$('toast');el.textContent=message;el.style.display='block';clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.style.display='none',2500);}
 function monthName(){return selectedMonth.slice(0,4)+'年'+Number(selectedMonth.slice(5))+'月';}
 function monthSessions(){return data.sessions.filter(s=>s.date.startsWith(selectedMonth)).sort((a,b)=>b.date.localeCompare(a.date)||String(b.createdAt).localeCompare(String(a.createdAt)));}
@@ -153,7 +193,7 @@ function stats(sessions){return {count:sessions.length,hours:sessions.reduce((n,
 // 课程关联学员每节计 1 次；直接打卡每次计 1 次。已关联课程的打卡不重复计。
 function studentAttendance(sid){
   const course=data.sessions.filter(s=>s.studentIds.includes(sid)).map(s=>({id:s.id,date:s.date,title:s.title,source:'course'}));
-  const manual=data.checkins.filter(c=>c.studentId===sid&&!c.linkedSessionId).map(c=>({id:c.id,date:c.date,title:'手动打卡',source:'manual'}));
+  const manual=data.checkins.filter(c=>c.studentId===sid&&!c.linkedSessionId).map(c=>({id:c.id,date:c.date,title:c.groupName||'手动打卡',source:c.groupId?'group':'manual'}));
   return course.concat(manual).sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id));
 }
 function lessonCount(sid,month){return studentAttendance(sid).filter(x=>!month||x.date.startsWith(month)).length;}
@@ -169,11 +209,78 @@ function getStudentCard(s,full=false){
   const rest=hasPlan?(left>=0?`剩余 ${left} 节`:`超出 ${Math.abs(left)} 节`):'未设置报名节数';
   const percent=hasPlan?Math.max(0,Math.min(100,count/s.purchasedLessons*100)):0;
   const latestManual=data.checkins.find(c=>c.studentId===s.id&&!c.linkedSessionId);
-  return `<article class="student-item" data-student-name="${esc(s.name.toLowerCase())}"><div class="student-top"><div class="student-main"><div class="student-name">${esc(s.name)} ${hasPlan&&left<=3?`<span class="pill low">${left<=0?'课时用完':'剩余不多'}</span>`:''}</div><div class="student-status"><b>${esc(done)}</b> · ${esc(rest)}</div><div class="student-count">本月 ${monthCount} 节${s.notes?` · ${esc(s.notes)}`:''}</div></div><div class="student-actions"><button class="quick" type="button" data-action="quick-add" data-id="${esc(s.id)}" aria-label="给 ${esc(s.name)} 增加一节课">+1 节</button></div></div>${hasPlan?`<div class="progress" role="progressbar" aria-label="${esc(s.name)} 上课进度" aria-valuemin="0" aria-valuemax="${s.purchasedLessons}" aria-valuenow="${Math.min(count,s.purchasedLessons)}"><div style="width:${percent}%"></div></div>`:''}${full?`<div class="student-foot"><span>累计 ${count} 节${s.purchasedHours?` · 旧版购入 ${hrs(s.purchasedHours)} 小时`:''}</span><div class="tiny-actions"><button class="btn small" type="button" data-action="history" data-id="${esc(s.id)}">明细</button><button class="btn small" type="button" data-action="edit-student" data-id="${esc(s.id)}">编辑</button>${latestManual?`<button class="btn small" type="button" data-action="undo-last" data-id="${esc(s.id)}">撤销打卡</button>`:''}<button class="btn small danger" type="button" data-action="delete-student" data-id="${esc(s.id)}">删除</button></div></div>`:''}</article>`;
+  const memberships=data.groups.filter(g=>g.studentIds.includes(s.id)).map(g=>g.name);
+  return `<article class="student-item" data-student-name="${esc(s.name.toLowerCase())}"><div class="student-top"><div class="student-main"><div class="student-name">${esc(s.name)} ${hasPlan&&left<=3?`<span class="pill low">${left<=0?'课时用完':'剩余不多'}</span>`:''}</div><div class="student-status"><b>${esc(done)}</b> · ${esc(rest)}</div><div class="student-count">本月 ${monthCount} 节${memberships.length?` · ${esc(memberships.join('、'))}`:''}${s.notes?` · ${esc(s.notes)}`:''}</div></div><div class="student-actions"><button class="quick" type="button" data-action="quick-add" data-id="${esc(s.id)}" aria-label="给 ${esc(s.name)} 增加一节课">+1 节</button></div></div>${hasPlan?`<div class="progress" role="progressbar" aria-label="${esc(s.name)} 上课进度" aria-valuemin="0" aria-valuemax="${s.purchasedLessons}" aria-valuenow="${Math.min(count,s.purchasedLessons)}"><div style="width:${percent}%"></div></div>`:''}${full?`<div class="student-foot"><span>累计 ${count} 节${s.purchasedHours?` · 旧版购入 ${hrs(s.purchasedHours)} 小时`:''}</span><div class="tiny-actions"><button class="btn small" type="button" data-action="history" data-id="${esc(s.id)}">明细</button><button class="btn small" type="button" data-action="edit-student" data-id="${esc(s.id)}">编辑</button>${latestManual?`<button class="btn small" type="button" data-action="undo-last" data-id="${esc(s.id)}">撤销打卡</button>`:''}<button class="btn small danger" type="button" data-action="delete-student" data-id="${esc(s.id)}">删除</button></div></div>`:''}</article>`;
 }
 function getCourseRow(s,detail=false){
   const names=s.studentIds.map(sid=>studentById(sid)?.name).filter(Boolean);
   return `<article class="course-item"><div class="course-main"><div class="course-name">${esc(s.title)}</div><div class="course-meta">${esc(s.date)} · ${hrs(s.duration)} 小时 · ${s.payMode==='hourly'?'按小时':'按节课'} ${money(s.rate)}${names.length?`<div>到课：${esc(names.join('、'))}</div>`:''}${s.notes?`<div>备注：${esc(s.notes)}</div>`:''}</div>${detail?`<div class="course-actions"><button type="button" class="btn small" data-action="edit-session" data-id="${esc(s.id)}">编辑</button><button type="button" class="btn small" data-action="toggle-settled" data-id="${esc(s.id)}">${s.settled?'改未结算':'标记结算'}</button><button type="button" class="btn small danger" data-action="delete-session" data-id="${esc(s.id)}">删除</button></div>`:''}</div><div class="course-side"><div class="course-money">${money(fee(s))}</div><span class="pill ${s.settled?'done':'pending'}">${s.settled?'已结算':'未结算'}</span></div></article>`;
+}
+
+function groupById(id){return data.groups.find(g=>g.id===id);}
+function groupCard(g){
+  const members=g.studentIds.map(sid=>studentById(sid)).filter(Boolean);
+  const lastBatch=data.checkins.filter(c=>c.groupId===g.id&&c.batchId).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)))[0];
+  return `<article class="group-item"><div class="group-head"><div><div class="group-name">${esc(g.name)} <span class="pill done">${members.length} 人</span></div><div class="group-members">${members.length?esc(members.map(s=>s.name).join('、')):'未添加学员'}</div></div></div>
+    <div class="group-ops"><button class="quick" type="button" data-action="group-quick" data-id="${esc(g.id)}" ${members.length?'':'disabled'}>全班 +1 节</button><button class="btn small subtle" type="button" data-action="group-attendance" data-id="${esc(g.id)}">选人 / 补记</button><button class="btn small" type="button" data-action="edit-group" data-id="${esc(g.id)}">编辑</button>${lastBatch?`<button class="btn small" type="button" data-action="group-undo" data-id="${esc(g.id)}">撤销上次</button>`:''}<button class="btn small danger" type="button" data-action="delete-group" data-id="${esc(g.id)}">删除</button></div>
+  </article>`;
+}
+function groupsPanel(){
+  return `<section class="panel"><div class="panel-head"><div><h3>班级考勤</h3><div class="desc">整班到齐时点「全班 +1 节」；有人请假，使用「选人 / 补记」。</div></div><button class="btn small subtle" data-action="add-group">+ 新建班级</button></div>
+    <div class="group-list">${data.groups.length?data.groups.map(groupCard).join(''):emptyState('暂无班级','可把多名学员放进同一个班。','<button class="btn small subtle" data-action="add-group">新建班级</button>')}</div></section>`;
+}
+function openGroup(id=''){
+  const g=groupById(id);
+  $('groupDialogTitle').textContent=g?'编辑班级':'新建班级';
+  $('groupId').value=g?.id||'';$('groupName').value=g?.name||'';
+  $('groupStudents').innerHTML=data.students.length?[...data.students].sort((a,b)=>a.name.localeCompare(b.name,'zh-CN')).map(s=>`<label><input type="checkbox" value="${esc(s.id)}" ${(g?.studentIds||[]).includes(s.id)?'checked':''}>${esc(s.name)}</label>`).join(''):'<div class="field-note">请先添加学员，再创建班级。</div>';
+  openDialog('groupDialog');
+}
+function saveGroup(e){
+  e.preventDefault();const old=groupById($('groupId').value),name=$('groupName').value.trim();
+  const studentIds=[...$('groupStudents').querySelectorAll('input:checked')].map(x=>x.value);
+  if(!name||!studentIds.length){toast('请填写班级名称，并至少选择一名学员');return;}
+  const g={id:old?.id||newid(),name:name.slice(0,60),studentIds,createdAt:old?.createdAt||new Date().toISOString()};
+  if(old)data.groups=data.groups.map(x=>x.id===old.id?g:x);else data.groups.push(g);
+  save();closeDialog('groupDialog');render();toast(old?'班级已更新':'班级已创建');
+}
+function openGroupAttendance(id){
+  const g=groupById(id);if(!g)return;
+  $('groupAttendanceTitle').textContent=g.name+' · 班级考勤';
+  $('attendanceGroupId').value=id;$('groupAttendanceDate').value=today();$('groupAllowRepeat').checked=false;
+  $('groupAttendanceStudents').innerHTML=g.studentIds.map(sid=>studentById(sid)).filter(Boolean).map(s=>`<label><input type="checkbox" value="${esc(s.id)}" checked>${esc(s.name)}</label>`).join('');
+  openDialog('groupAttendanceDialog');
+}
+function hasAttendanceOnDate(sid,date){return data.sessions.some(s=>s.date===date&&s.studentIds.includes(sid))||data.checkins.some(c=>c.studentId===sid&&c.date===date&&!c.linkedSessionId);}
+function addGroupAttendance(id,date,chosenIds=null,allowRepeat=false){
+  const g=groupById(id);if(!g||!validDate(date))return false;
+  const members=g.studentIds.filter(sid=>studentById(sid));
+  const ids=chosenIds?members.filter(sid=>chosenIds.includes(sid)):members;
+  if(!ids.length){toast('请至少选择一名到课学员');return false;}
+  // 已有记录不重复计入；点击一次最多给同一人增加一节。
+  const fresh=allowRepeat?ids:ids.filter(sid=>!hasAttendanceOnDate(sid,date));
+  if(!fresh.length){toast(date+' 的所选学员已经记录过考勤');return false;}
+  const batchId=newid(),now=new Date().toISOString();
+  data.checkins.push(...fresh.map(studentId=>({id:newid(),studentId,date,createdAt:now,linkedSessionId:'',groupId:g.id,groupName:g.name,batchId})));
+  save();render();toast(`${g.name}：新增 ${fresh.length} 人${ids.length>fresh.length?'，跳过已记录 '+(ids.length-fresh.length)+' 人':''}`);
+  return true;
+}
+function submitGroupAttendance(e){e.preventDefault();const id=$('attendanceGroupId').value,date=$('groupAttendanceDate').value;
+  const ids=[...$('groupAttendanceStudents').querySelectorAll('input:checked')].map(el=>el.value);
+  if(addGroupAttendance(id,date,ids,$('groupAllowRepeat').checked))closeDialog('groupAttendanceDialog');
+}
+function undoGroupAttendance(id){
+  const g=groupById(id);if(!g)return;
+  const last=data.checkins.filter(c=>c.groupId===id&&c.batchId).sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt)))[0];
+  if(!last)return;
+  const matching=data.checkins.filter(c=>c.batchId===last.batchId&&c.groupId===id);
+  if(!confirm(`撤销「${g.name}」在 ${last.date} 的上次考勤（${matching.length} 人）？如已关联课程，课程自身的考勤仍会保留。`))return;
+  data.checkins=data.checkins.filter(c=>!(c.groupId===id&&c.batchId===last.batchId));save();render();toast('已撤销上次班级打卡');
+}
+function deleteGroup(id){
+  const g=groupById(id);if(!g)return;
+  if(!confirm(`删除班级「${g.name}」？学员和已记录的考勤会保留，只删除班级分组。`))return;
+  data.groups=data.groups.filter(x=>x.id!==id);save();render();toast('班级已删除，历史考勤保留');
 }
 function renderHome(){
   const ms=monthSessions(),s=stats(ms),students=data.students;
@@ -183,6 +290,7 @@ function renderHome(){
     <div class="hero-actions"><button class="btn primary" data-action="add-session">＋ 记一节课</button><button class="btn subtle" data-action="add-student">＋ 添加学员</button><button class="btn" data-action="backup">备份数据</button></div></section>
     <div class="stats">${stat('本月应得课酬',money(s.total),`${s.count} 节课程`,true)}${stat('本月授课时长',`${hrs(s.hours)} h`,'按课程计算')}${stat('已结算',money(s.settled),'本月')}${stat('待结算',money(s.pending),'本月')}</div>
     ${!storageUsable?'<div class="section-notice warn">本地存储不可用，请先备份数据。</div>':''}
+    ${groupsPanel()}
     <section class="panel"><div class="panel-head"><div><h3>学员考勤</h3><div class="desc">点击 +1 节，直接更新已上节数。</div></div><button class="btn small subtle" data-action="go-students">全部学员</button></div>
       <div class="student-list">${sorted.length?sorted.slice(0,8).map(x=>getStudentCard(x,false)).join(''):emptyState('暂无学员','添加学员并设置报名节数。','<button class="btn primary" data-action="add-student">添加学员</button>')}</div></section>
     <section class="panel"><div class="panel-head"><div><h3>最近课程</h3></div><button class="btn small subtle" data-action="go-sessions">全部课程</button></div>
@@ -191,6 +299,7 @@ function renderHome(){
 function renderStudents(){
   const total=data.students.length,monthTotal=data.students.reduce((n,s)=>n+lessonCount(s.id,selectedMonth),0);
   return `${header('学员考勤',`共 ${total} 名学员 · 本月打卡 ${monthTotal} 节`,'<button class="btn primary" data-action="add-student">+ 添加学员</button>')}
+    ${groupsPanel()}
     <div class="section-notice">直接点 +1 记考勤；「明细」支持补记和删除。课程关联的出勤也计入节数。</div>
     <input type="search" id="studentSearch" class="search" placeholder="搜索学员姓名" aria-label="搜索学员姓名">
     <div id="studentResults" class="student-list">${total?[...data.students].sort((a,b)=>a.name.localeCompare(b.name,'zh-CN')).map(x=>getStudentCard(x,true)).join(''):emptyState('还没有学员','点击右上角添加。')}</div>`;
@@ -207,11 +316,12 @@ function renderSettings(){
   return `${header('数据管理','导出、备份与恢复')}
     <section class="panel"><div class="panel-head"><div><h3>导出 CSV</h3><div class="desc">CSV 可用 Excel、Numbers 等软件打开。</div></div></div>
       ${settingsRow('学员汇总','报名节数、已上节数、剩余节数、本月考勤。','<button class="btn" data-action="export-students">导出</button>')}
+      ${settingsRow('班级名单','班级及当前学员名单。','<button class="btn" data-action="export-groups">导出</button>')}
       ${settingsRow('考勤明细','每次课程关联和每次未关联的快捷打卡。','<button class="btn" data-action="export-attendance">导出</button>')}
       ${settingsRow('本月课程与课酬','日期、时长、课酬、结算状态。','<button class="btn" data-action="export-sessions">导出</button>')}
     </section>
     <section class="panel"><div class="panel-head"><div><h3>完整数据</h3></div></div>
-      ${settingsRow('备份 JSON','保存所有学员、课程、快捷打卡和结算记录。','<button class="btn primary" data-action="backup">下载备份</button>')}
+      ${settingsRow('备份 JSON','保存学员、班级、考勤、课程和结算记录。','<button class="btn primary" data-action="backup">下载备份</button>')}
       ${settingsRow('恢复 JSON','从旧版备份恢复。会覆盖当前数据。','<button class="btn" data-action="restore">恢复文件</button>')}
       ${settingsRow('清空全部数据','清空前请先备份。操作不可撤销。','<button class="btn danger" data-action="clear">清空</button>')}
     </section>
@@ -260,7 +370,7 @@ function renderHistory(sid){
   $('historyTitle').textContent=s.name+' · 考勤明细';
   $('historySummary').textContent=`已上 ${lessonCount(sid)}${s.purchasedLessons?' / '+s.purchasedLessons:''} 节 · 本月 ${lessonCount(sid,selectedMonth)} 节`;
   const entries=studentAttendance(sid);
-  $('historyRows').innerHTML=entries.length?entries.map(a=>`<div class="history-row"><div><div class="history-title">${esc(a.title)}</div><div class="history-meta">${esc(a.date)} · ${a.source==='manual'?'快捷打卡':'课程记录'}</div></div><div class="history-action"><b style="font-size:13px">+1 节</b>${a.source==='manual'?`<button class="btn small danger" data-action="remove-checkin" data-id="${esc(a.id)}">删除</button>`:''}</div></div>`).join(''):emptyState('没有考勤记录','可以在上面补记。');
+  $('historyRows').innerHTML=entries.length?entries.map(a=>`<div class="history-row"><div><div class="history-title">${esc(a.title)}</div><div class="history-meta">${esc(a.date)} · ${a.source==='group'?'班级考勤':a.source==='manual'?'快捷打卡':'课程记录'}</div></div><div class="history-action"><b style="font-size:13px">+1 节</b>${a.source!=='course'?`<button class="btn small danger" data-action="remove-checkin" data-id="${esc(a.id)}">删除</button>`:''}</div></div>`).join(''):emptyState('没有考勤记录','可以在上面补记。');
 }
 function showHistory(sid){if(!studentById(sid))return;currentHistoryId=sid;$('manualDate').value=today();renderHistory(sid);openDialog('historyDialog');}
 function deleteCheckin(id){
@@ -307,30 +417,34 @@ function saveSession(e){
 function deleteSession(id){const s=sessionById(id);if(!s)return;if(!confirm(`删除「${s.title}」？课程课酬会扣除；之前通过 +1 打过卡的记录仍保留。`))return;
   data.checkins.forEach(c=>{if(c.linkedSessionId===id)c.linkedSessionId='';});data.sessions=data.sessions.filter(x=>x.id!==id);save();render();toast('课程已删除');}
 function deleteStudent(sid){const s=studentById(sid);if(!s)return;if(!confirm(`确定删除学员「${s.name}」及其考勤记录？课程记录和老师课酬保留。`))return;
-  data.checkins=data.checkins.filter(c=>c.studentId!==sid);data.sessions.forEach(c=>{c.studentIds=c.studentIds.filter(x=>x!==sid);});data.students=data.students.filter(x=>x.id!==sid);save();render();toast('学员已删除');}
+  data.checkins=data.checkins.filter(c=>c.studentId!==sid);data.sessions.forEach(c=>{c.studentIds=c.studentIds.filter(x=>x!==sid);});data.students=data.students.filter(x=>x.id!==sid);data.groups.forEach(g=>g.studentIds=g.studentIds.filter(x=>x!==sid));save();render();toast('学员已删除');}
 function csvCell(x){return '"'+String(x??'').replaceAll('"','""')+'"';}
 function csv(rows){return '\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n')+'\r\n';}
 function download(content,name,mime){const url=URL.createObjectURL(new Blob([content],{type:mime}));const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);toast('已开始下载 '+name);}
-function exportStudents(){const rows=[['学员','报名节数','累计已上节数','剩余节数','统计月份','本月已上节数','旧版购入小时','备注']];data.students.forEach(s=>rows.push([s.name,s.purchasedLessons||'未设置',lessonCount(s.id),s.purchasedLessons?s.purchasedLessons-lessonCount(s.id):'未设置',selectedMonth,lessonCount(s.id,selectedMonth),s.purchasedHours||'',s.notes]));download(csv(rows),'课时账本_学员_'+selectedMonth+'.csv','text/csv;charset=utf-8');}
-function exportAttendance(){const rows=[['日期','学员','课程/来源','计入节数','记录类型']];data.students.forEach(s=>studentAttendance(s.id).forEach(a=>rows.push([a.date,s.name,a.title,1,a.source==='manual'?'快捷打卡':'课程关联'])));download(csv(rows),'课时账本_考勤全部.csv','text/csv;charset=utf-8');}
+
+function exportGroups(){const rows=[['班级','当前学员人数','学员名单']];data.groups.forEach(g=>rows.push([g.name,g.studentIds.length,g.studentIds.map(sid=>studentById(sid)?.name||'').join('、')]));download(csv(rows),'课时账本_班级名单.csv','text/csv;charset=utf-8');}
+function exportStudents(){const rows=[['学员','报名节数','累计已上节数','剩余节数','统计月份','本月已上节数','旧版购入小时','备注','所属班级']];data.students.forEach(s=>rows.push([s.name,s.purchasedLessons||'未设置',lessonCount(s.id),s.purchasedLessons?s.purchasedLessons-lessonCount(s.id):'未设置',selectedMonth,lessonCount(s.id,selectedMonth),s.purchasedHours||'',s.notes,data.groups.filter(g=>g.studentIds.includes(s.id)).map(g=>g.name).join('、')]));download(csv(rows),'课时账本_学员_'+selectedMonth+'.csv','text/csv;charset=utf-8');}
+function exportAttendance(){const rows=[['日期','学员','课程/来源','计入节数','记录类型']];data.students.forEach(s=>studentAttendance(s.id).forEach(a=>rows.push([a.date,s.name,a.title,1,a.source==='group'?'班级考勤':a.source==='manual'?'快捷打卡':'课程关联'])));download(csv(rows),'课时账本_考勤全部.csv','text/csv;charset=utf-8');}
 function exportSessions(){const rows=[['日期','课程','时长(小时)','计薪方式','单价(元)','本节课酬(元)','到课学员','结算状态','备注']];monthSessions().forEach(s=>rows.push([s.date,s.title,hrs(s.duration),s.payMode==='hourly'?'按小时':'按节课',euro(s.rate),euro(fee(s)),s.studentIds.map(x=>studentById(x)?.name||'').join('、'),s.settled?'已结算':'未结算',s.notes]));download(csv(rows),'课时账本_课程_'+selectedMonth+'.csv','text/csv;charset=utf-8');}
 function backup(){download(JSON.stringify({app:'TeacherLedger',version:VERSION,exportedAt:new Date().toISOString(),data},null,2),'课时账本_备份_'+today()+'.json','application/json;charset=utf-8');}
-$('importFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{if(f.size>20*1024*1024)throw Error('备份文件超过 20 MB');const raw=JSON.parse(await f.text()),next=validate(raw.data||raw);if(!confirm(`恢复备份将覆盖当前记录。\n备份包含 ${next.students.length} 名学员、${next.sessions.length} 节课程、${next.checkins.length} 条快捷打卡。\n确定恢复吗？`))return;data=next;save();tab='home';render();toast('备份恢复成功');}catch(err){alert('恢复失败：'+err.message);}finally{e.target.value='';}});
+$('importFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{if(f.size>20*1024*1024)throw Error('备份文件超过 20 MB');const raw=JSON.parse(await f.text()),next=validate(raw.data||raw);if(!confirm(`恢复备份将覆盖当前记录。\n备份包含 ${next.students.length} 名学员、${next.groups.length} 个班级、${next.sessions.length} 节课程、${next.checkins.length} 条考勤记录。\n确定恢复吗？`))return;data=next;save();tab='home';render();toast('备份恢复成功');}catch(err){alert('恢复失败：'+err.message);}finally{e.target.value='';}});
 document.addEventListener('click',e=>{
   const nav=e.target.closest('[data-tab]');if(nav){tab=nav.dataset.tab;render();window.scrollTo(0,0);return;}
   const close=e.target.closest('[data-close]');if(close){closeDialog(close.dataset.close);return;}
   const btn=e.target.closest('[data-action]');if(!btn)return;
   const a=btn.dataset.action,uid=btn.dataset.id;
   if(a==='go-students'){tab='students';render();}else if(a==='go-sessions'){tab='sessions';render();}
+  else if(a==='add-group')openGroup();else if(a==='edit-group')openGroup(uid);else if(a==='group-quick')addGroupAttendance(uid,today());else if(a==='group-attendance')openGroupAttendance(uid);else if(a==='group-undo')undoGroupAttendance(uid);else if(a==='delete-group')deleteGroup(uid);
   else if(a==='add-student')openStudent();else if(a==='edit-student')openStudent(uid);
   else if(a==='quick-add')addCheckin(uid);else if(a==='undo-last')undoLast(uid);else if(a==='history')showHistory(uid);
   else if(a==='remove-checkin')deleteCheckin(uid);else if(a==='delete-student')deleteStudent(uid);
   else if(a==='add-session')openSession();else if(a==='edit-session')openSession(uid);
   else if(a==='toggle-settled'){const s=sessionById(uid);if(!s)return;s.settled=!s.settled;s.settledAt=s.settled?new Date().toISOString():'';save();render();toast(s.settled?'已结算':'已改为未结算');}
   else if(a==='delete-session')deleteSession(uid);
-  else if(a==='backup')backup();else if(a==='export-students')exportStudents();else if(a==='export-attendance')exportAttendance();else if(a==='export-sessions')exportSessions();else if(a==='restore'){$('importFile').value='';$('importFile').click();}
-  else if(a==='clear'){if(confirm('清空所有学员、考勤、课程和结算记录？请先备份。')&&confirm('此操作无法撤销，确定清空吗？')){data=empty();save();render();toast('全部记录已清空');}}
+  else if(a==='export-groups')exportGroups();else if(a==='backup')backup();else if(a==='export-students')exportStudents();else if(a==='export-attendance')exportAttendance();else if(a==='export-sessions')exportSessions();else if(a==='restore'){$('importFile').value='';$('importFile').click();}
+  else if(a==='clear'){if(confirm('清空所有学员、班级、考勤、课程和结算记录？请先备份。')&&confirm('此操作无法撤销，确定清空吗？')){data=empty();save();render();toast('全部记录已清空');}}
 });
+$('groupForm').addEventListener('submit',saveGroup);$('groupAttendanceForm').addEventListener('submit',submitGroupAttendance);
 $('studentForm').addEventListener('submit',saveStudent);$('sessionForm').addEventListener('submit',saveSession);
 $('manualAdd').addEventListener('click',()=>{if(currentHistoryId)addCheckin(currentHistoryId,$('manualDate').value);});
 $('monthInput').addEventListener('change',e=>{if(/^\d{4}-(0[1-9]|1[0-2])$/.test(e.target.value)){selectedMonth=e.target.value;render();}});
