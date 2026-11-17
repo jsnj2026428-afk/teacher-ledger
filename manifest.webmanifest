@@ -1,7 +1,7 @@
 {
   "name": "课时账本",
   "short_name": "课时账本",
-  "description": "学员与班级考勤、课时课酬、月度结算及备份",
+  "description": "课程考勤、班课课酬、15号发薪统计",
   "lang": "zh-CN",
   "start_url": "./index.html",
   "scope": "./",
